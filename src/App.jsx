@@ -29,7 +29,7 @@ export default function App() {
             <Navbar />
 
             {/* Core Route Screens */}
-            <main className="flex-grow flex flex-col">
+            <main className="flex-grow flex-col">
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Home />} />
