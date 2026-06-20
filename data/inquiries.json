@@ -1,0 +1,15 @@
+[
+  {
+    "_id": "qd62gzxbs",
+    "createdAt": "2026-06-19T16:00:50.072Z",
+    "propertyId": "ldm2pnh5v",
+    "propertyTitle": "Modern Cozy Studio Apartment",
+    "ownerId": "8n82gbe78",
+    "tenantId": "3jokp1wgm",
+    "tenantName": "Sushant Shrestha",
+    "tenantEmail": "tenant@merokotha.com",
+    "tenantPhone": "9851098765",
+    "message": "Hello, I am interested in renting this cozy studio in Jhamsikhel. Is it still available for inspection this Saturday?",
+    "status": "Pending"
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "MeroKotha",
+  "description": "A full-stack room, flat, and house rental marketplace for Nepal with JWT authentication, owner listings, tenant inquiries, admin moderation, dark mode, and responsive dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_FULL_STACK_REACT_EXPRESS"]
+}

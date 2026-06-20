@@ -1,0 +1,314 @@
+[
+  {
+    "_id": "6p2mygp61",
+    "createdAt": "2026-06-19T06:35:20.277Z",
+    "title": "Modern Cozy Studio Apartment",
+    "description": "A beautiful, fully-furnished single bedroom studio apartment at Jhamsikhel, Lalitpur’s most premium neighborhood. Quiet environment, 24/7 solar back-up electricity, continuous water supply, high speed Wi-Fi, and terrace access. Perfect for single professionals or couples looking for a long term state of art living experience.",
+    "rent": 18000,
+    "propertyType": "Room",
+    "province": "Bagmati Province",
+    "district": "Lalitpur",
+    "city": "Lalitpur",
+    "location": "Jhamsikhel",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Furnished",
+      "Continuous Water",
+      "Electricity Backup",
+      "High-speed internet",
+      "Parking",
+      "Terrace Access"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Approved"
+  },
+  {
+    "_id": "cgnm78urn",
+    "createdAt": "2026-06-19T06:35:20.277Z",
+    "title": "Spacious 2 BHK Family Flat in Koteshwor",
+    "description": "Perfect family ground floor flat in Koteshwor, Kathmandu. Features 2 large bedrooms, 1 common fully tiled bathroom, 1 modular kitchen setup and a spacious living room. Located 5 minutes walking distance from Koteshwor Chowk with safe parking and immediate public transportation access.",
+    "rent": 26000,
+    "propertyType": "Flat",
+    "province": "Bagmati Province",
+    "district": "Kathmandu",
+    "city": "Kathmandu",
+    "location": "Koteshwor",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "facilities": [
+      "Parking",
+      "Continuous Water",
+      "CCTV Security",
+      "Kitchen Utilities",
+      "Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Approved"
+  },
+  {
+    "_id": "7eae0xbzk",
+    "createdAt": "2026-06-19T06:35:20.278Z",
+    "title": "Beautiful Luxury Homestay Villa near Lakeside",
+    "description": "Unmatched 4 BHK luxury home in Lakeside, Pokhara with majestic views of Fewa Lake and the Annapurna Mountain range. Boasts premium architecture, a manicured garden area, a private carport, dynamic living spaces, modular appliances, and supreme design standards. Ideally suited for expats, premium homestays, or large families.",
+    "rent": 85000,
+    "propertyType": "House",
+    "province": "Gandaki Province",
+    "district": "Kaski",
+    "city": "Pokhara",
+    "location": "Lakeside Ward 6",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "facilities": [
+      "Garden",
+      "Private Garage",
+      "Scenic Hill View",
+      "Continuous Water",
+      "Semi-Furnished",
+      "AC Rooms",
+      "Airy Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Approved"
+  },
+  {
+    "_id": "we62bv8aj",
+    "createdAt": "2026-06-19T06:35:20.278Z",
+    "title": "Affordable 1 BHK Flat near Butwal Chowk",
+    "description": "Nice and clean first-floor 1 BHK flat for rent. Has 1 bedroom, 1 separate kitchen, and water availability. Located near Milanchowk, Butwal and close to the local schools and markets.",
+    "rent": 11000,
+    "propertyType": "Flat",
+    "province": "Lumbini Province",
+    "district": "Rupandehi",
+    "city": "Butwal",
+    "location": "Milanchowk",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Continuous Water",
+      "Bike Parking"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Approved"
+  },
+  {
+    "_id": "pkh2bhk15k",
+    "createdAt": "2026-06-19T06:36:00.000Z",
+    "title": "Charming 2 BHK Flat near Lakeside",
+    "description": "A wonderful, well-ventilated 2 bedroom apartment located in a serene residential sector near Lakeside, Pokhara. Features continuous water supply with solar heater access, scenic views of the hills, high-speed Wi-Fi, and open bike parking. Highly recommended for couples or students.",
+    "rent": 14000,
+    "propertyType": "Flat",
+    "province": "Gandaki Province",
+    "district": "Kaski",
+    "city": "Pokhara",
+    "location": "Lakeside Ward 8",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "facilities": [
+      "Continuous Water",
+      "High-speed internet",
+      "Parking",
+      "Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Approved"
+  },
+  {
+    "_id": "9zs10k788",
+    "createdAt": "2026-06-19T06:35:20.278Z",
+    "title": "Pending Cozy Room for Rent - Bhaktapur",
+    "description": "This is a test listing showing pending approval behavior. Private room with basic amenities near Bhaktapur Durbar Square. Available exclusively for students or single guests.",
+    "rent": 6500,
+    "propertyType": "Room",
+    "province": "Bagmati Province",
+    "district": "Bhaktapur",
+    "city": "Bhaktapur",
+    "location": "Durbar Area",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Electric Back-up",
+      "Bike Parking"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "4vo3hhk8e",
+    "status": "Pending"
+  },
+  {
+    "_id": "ldm2pnh5v",
+    "createdAt": "2026-06-19T16:00:50.069Z",
+    "title": "Modern Cozy Studio Apartment",
+    "description": "A beautiful, fully-furnished single bedroom studio apartment at Jhamsikhel, Lalitpur’s most premium neighborhood. Quiet environment, 24/7 solar back-up electricity, continuous water supply, high speed Wi-Fi, and terrace access. Perfect for single professionals or couples looking for a long term state of art living experience.",
+    "rent": 18000,
+    "propertyType": "Room",
+    "province": "Bagmati Province",
+    "district": "Lalitpur",
+    "city": "Lalitpur",
+    "location": "Jhamsikhel",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Furnished",
+      "Continuous Water",
+      "Electricity Backup",
+      "High-speed internet",
+      "Parking",
+      "Terrace Access"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Approved"
+  },
+  {
+    "_id": "1ifwetcvr",
+    "createdAt": "2026-06-19T16:00:50.074Z",
+    "title": "Spacious 2 BHK Family Flat in Koteshwor",
+    "description": "Perfect family ground floor flat in Koteshwor, Kathmandu. Features 2 large bedrooms, 1 common fully tiled bathroom, 1 modular kitchen setup and a spacious living room. Located 5 minutes walking distance from Koteshwor Chowk with safe parking and immediate public transportation access.",
+    "rent": 26000,
+    "propertyType": "Flat",
+    "province": "Bagmati Province",
+    "district": "Kathmandu",
+    "city": "Kathmandu",
+    "location": "Koteshwor",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "facilities": [
+      "Parking",
+      "Continuous Water",
+      "CCTV Security",
+      "Kitchen Utilities",
+      "Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Approved"
+  },
+  {
+    "_id": "c373x2tx6",
+    "createdAt": "2026-06-19T16:00:50.077Z",
+    "title": "Beautiful Luxury Homestay Villa near Lakeside",
+    "description": "Unmatched 4 BHK luxury home in Lakeside, Pokhara with majestic views of Fewa Lake and the Annapurna Mountain range. Boasts premium architecture, a manicured garden area, a private carport, dynamic living spaces, modular appliances, and supreme design standards. Ideally suited for expats, premium homestays, or large families.",
+    "rent": 85000,
+    "propertyType": "House",
+    "province": "Gandaki Province",
+    "district": "Kaski",
+    "city": "Pokhara",
+    "location": "Lakeside Ward 6",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "facilities": [
+      "Garden",
+      "Private Garage",
+      "Scenic Hill View",
+      "Continuous Water",
+      "Semi-Furnished",
+      "AC Rooms",
+      "Airy Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Approved"
+  },
+  {
+    "_id": "a3qr42nnx",
+    "createdAt": "2026-06-19T16:00:50.080Z",
+    "title": "Charming 2 BHK Flat near Lakeside",
+    "description": "A wonderful, well-ventilated 2 bedroom apartment located in a serene residential sector near Lakeside, Pokhara. Features continuous water supply with solar heater access, scenic views of the hills, high-speed Wi-Fi, and open bike parking. Highly recommended for couples or students.",
+    "rent": 14000,
+    "propertyType": "Flat",
+    "province": "Gandaki Province",
+    "district": "Kaski",
+    "city": "Pokhara",
+    "location": "Lakeside Ward 8",
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "facilities": [
+      "Continuous Water",
+      "High-speed internet",
+      "Parking",
+      "Balcony"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Approved"
+  },
+  {
+    "_id": "q37heflu5",
+    "createdAt": "2026-06-19T16:00:50.083Z",
+    "title": "Affordable 1 BHK Flat near Butwal Chowk",
+    "description": "Nice and clean first-floor 1 BHK flat for rent. Has 1 bedroom, 1 separate kitchen, and water availability. Located near Milanchowk, Butwal and close to the local schools and markets.",
+    "rent": 11000,
+    "propertyType": "Flat",
+    "province": "Lumbini Province",
+    "district": "Rupandehi",
+    "city": "Butwal",
+    "location": "Milanchowk",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Continuous Water",
+      "Bike Parking"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Approved"
+  },
+  {
+    "_id": "igepvsp04",
+    "createdAt": "2026-06-19T16:00:50.085Z",
+    "title": "Pending Cozy Room for Rent - Bhaktapur",
+    "description": "This is a test listing showing pending approval behavior. Private room with basic amenities near Bhaktapur Durbar Square. Available exclusively for students or single guests.",
+    "rent": 6500,
+    "propertyType": "Room",
+    "province": "Bagmati Province",
+    "district": "Bhaktapur",
+    "city": "Bhaktapur",
+    "location": "Durbar Area",
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "facilities": [
+      "Electric Back-up",
+      "Bike Parking"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
+    ],
+    "owner": "8n82gbe78",
+    "status": "Pending"
+  }
+]

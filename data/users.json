@@ -1,0 +1,35 @@
+[
+  {
+    "_id": "fkl709wb7",
+    "createdAt": "2026-06-19T16:00:49.999Z",
+    "name": "MeroKotha Admin",
+    "email": "admin@merokotha.com",
+    "password": "$2b$10$CNn2x5nK0B6eW3gSz4t9ru9d3QwNfMUVmGJYS9wbcA29e60KzcV2S",
+    "role": "Admin",
+    "phone": "9801234567",
+    "favorites": [],
+    "isVerified": true
+  },
+  {
+    "_id": "8n82gbe78",
+    "createdAt": "2026-06-19T16:00:50.064Z",
+    "name": "Ramesh Adhikari",
+    "email": "owner@merokotha.com",
+    "password": "$2b$10$W5uiDGMHmhVwf7VnG5cQpehclQoKLpbyqExWHMrNesnyd1yyfRpbW",
+    "role": "Property Owner",
+    "phone": "9841567890",
+    "favorites": [],
+    "isVerified": true
+  },
+  {
+    "_id": "3jokp1wgm",
+    "createdAt": "2026-06-19T16:00:50.066Z",
+    "name": "Sushant Shrestha",
+    "email": "tenant@merokotha.com",
+    "password": "$2b$10$78g5loEAlS2OobtL0MvuNOmtl/XK8LWLPyX9rETXVYuGRTQV2eFmu",
+    "role": "Tenant",
+    "phone": "9851098765",
+    "favorites": [],
+    "isVerified": true
+  }
+]
