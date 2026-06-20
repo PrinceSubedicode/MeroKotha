@@ -63,7 +63,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[MeroKotha Server] Listening on http://0.0.0.0:${PORT}`);
+    console.log(`[MeroKotha Server] Listening on http://localhost:${PORT}`);
 
     if (process.env.NODE_ENV !== 'production' && process.env.AUTO_OPEN_BROWSER === 'true') {
       const url = `http://localhost:${PORT}`;
