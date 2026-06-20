@@ -262,7 +262,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1541417904950-b855846fe074?auto=format&fit=crop&q=80&w=600" 
                 alt="Kathmandu" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
@@ -280,7 +280,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1596422846543-75c6fc18a523?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&q=80&w=600" 
                 alt="Lalitpur" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
@@ -298,7 +298,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1590487989505-18cf7427814b?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=600" 
                 alt="Pokhara" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
@@ -316,7 +316,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1581888227599-779811939961?auto=format&fit=crop&q=80&w=600" 
                 alt="Chitwan" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
