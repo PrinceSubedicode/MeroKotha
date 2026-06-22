@@ -75,7 +75,7 @@ export default function TenantDashboard() {
       {/* Welcome header banner */}
       <section className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-md mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Katha Seekers Hub</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">MeroKotha Seekers Hub</h1>
           <p className="text-sm text-emerald-100/90 mt-1">
             Namaste, <strong className="text-white">{user?.name}</strong>! Review your rent applications, inspect chat leads, and check bookmarked rooms.
           </p>
