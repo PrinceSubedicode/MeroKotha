@@ -23,13 +23,14 @@ export function MeroKothaIcon({ className = "h-10 w-10", size = 40 }) {
         strokeLinejoin="round"
       />
 
-      {/* Inner House Frame (Navy Blue) */}
+      {/* Inner House Frame (Navy Blue - adapts in dark mode) */}
       <path 
         d="M28 85V54.5L50 34.5L72 54.5V81C72 83.2091 70.2091 85 68 85" 
-        stroke="#0d233e" 
+        stroke="currentColor" 
         strokeWidth="6.5" 
         strokeLinecap="round" 
         strokeLinejoin="round"
+        className="text-[#0d233e] dark:text-[#a5f3fc]"
       />
 
       {/* 2x2 Window Grid (Teal) */}
@@ -52,9 +53,9 @@ export default function MeroKothaLogo({ iconSize = 36, textClass = "text-xl", cl
   return (
     <div className={className} id="merokotha-inline-logo">
       <MeroKothaIcon size={iconSize} className="shrink-0" />
-      <span className={`${textClass} tracking-tight font-sans text-slate-900`}>
-        <span className="font-light text-[#0d233e]">Mero</span>
-        <span className="font-extrabold text-[#0d233e]">Kotha</span>
+      <span className={`${textClass} tracking-tight font-sans`}>
+        <span className="font-light text-[#0d233e] dark:text-emerald-300">Mero</span>
+        <span className="font-extrabold text-[#0d233e] dark:text-emerald-400">Kotha</span>
       </span>
     </div>
   );
