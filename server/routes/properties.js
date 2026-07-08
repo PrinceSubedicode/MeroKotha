@@ -11,53 +11,11 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
-const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || 'merokotha/properties';
-
-function isBase64Image(value) {
-  return typeof value === 'string' && value.startsWith('data:image/');
-}
-
-async function uploadToCloudinary(base64String) {
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET || !isBase64Image(base64String)) {
-    return null;
-  }
-
-  const formData = new FormData();
-  formData.append('file', base64String);
-  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-  formData.append('folder', CLOUDINARY_FOLDER);
-
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Cloudinary upload failed: ${text}`);
-  }
-
-  const data = await response.json();
-  return data.secure_url;
-}
-
 // Utility to process and save base64 uploaded images locally
-async function saveImage(base64String) {
-  if (!base64String || !isBase64Image(base64String)) {
+function saveImage(base64String) {
+  if (!base64String || typeof base64String !== 'string' || !base64String.startsWith('data:image/')) {
     return base64String; // Return as-is if it's already a URL
   }
-
-  try {
-    const cloudinaryUrl = await uploadToCloudinary(base64String);
-    if (cloudinaryUrl) {
-      return cloudinaryUrl;
-    }
-  } catch (error) {
-    console.warn('Cloudinary upload failed, falling back to local image storage:', error.message);
-  }
-
   try {
     const matches = base64String.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
@@ -68,7 +26,7 @@ async function saveImage(base64String) {
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const fileName = `prop_${Date.now()}_${randomSuffix}.${fileExtension}`;
     const targetPath = path.join(UPLOADS_DIR, fileName);
-
+    
     fs.writeFileSync(targetPath, imageBuffer);
     return `/uploads/${fileName}`;
   } catch (error) {
@@ -204,7 +162,8 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
     const { 
       title, description, rent, propertyType, 
       province, district, city, location, 
-      bedrooms, bathrooms, facilities = [], images = [] 
+      bedrooms, bathrooms, facilities = [], images = [],
+      lat, lng
     } = req.body;
 
     // Validate inputs
@@ -213,8 +172,8 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
     }
 
     // Process uploaded base64 strings
-    const processedImages = await Promise.all((images || []).filter(Boolean).map(img => saveImage(img)));
-
+    const processedImages = (images || []).map(img => saveImage(img));
+    
     // Default image if none provided
     if (processedImages.length === 0) {
       processedImages.push('https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800');
@@ -235,7 +194,9 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
       facilities,
       images: processedImages,
       owner: req.user._id,
-      status: 'Pending' // Requires admin verification
+      status: 'Pending', // Requires admin verification
+      lat: lat ? Number(lat) : null,
+      lng: lng ? Number(lng) : null
     });
 
     res.status(201).json({
@@ -267,7 +228,8 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
     const { 
       title, description, rent, propertyType, 
       province, district, city, location, 
-      bedrooms, bathrooms, facilities, images 
+      bedrooms, bathrooms, facilities, images,
+      lat, lng
     } = req.body;
 
     const updates = {};
@@ -282,9 +244,11 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
     if (bedrooms) updates.bedrooms = Number(bedrooms);
     if (bathrooms) updates.bathrooms = Number(bathrooms);
     if (facilities) updates.facilities = facilities;
+    if (lat !== undefined) updates.lat = lat ? Number(lat) : null;
+    if (lng !== undefined) updates.lng = lng ? Number(lng) : null;
     
     if (images) {
-      updates.images = await Promise.all(images.filter(Boolean).map(img => saveImage(img)));
+      updates.images = images.map(img => saveImage(img));
     }
 
     // Editing sets it back to 'Pending' for review

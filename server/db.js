@@ -179,29 +179,6 @@ function fromMongoDoc(doc) {
   return result;
 }
 
-// === Test MongoDB Connection on Startup ===
-export async function testMongoConnection() {
-  if (!MONGODB_URI) {
-    console.log('[MeroKotha DB] ⚠️  No MongoDB URI configured - using local JSON storage');
-    return false;
-  }
-  
-  try {
-    console.log('[MeroKotha DB] 🔄 Testing MongoDB Atlas connection...');
-    const db = await getMongoDb();
-    if (db) {
-      console.log(`[MeroKotha DB] ✅ MongoDB connection successful!`);
-      return true;
-    } else {
-      console.log('[MeroKotha DB] ⚠️  MongoDB connection failed, using local JSON storage as fallback');
-      return false;
-    }
-  } catch (error) {
-    console.error('[MeroKotha DB] ❌ MongoDB connection test error:', error.message);
-    return false;
-  }
-}
-
 export const db = {
   collection(name) {
     return {
@@ -450,7 +427,6 @@ export async function seedDatabase() {
       password: adminPasswordHash,
       role: 'Admin',
       phone: '9801234567',
-      favorites: [],
       isVerified: true
     });
 
@@ -460,7 +436,6 @@ export async function seedDatabase() {
       password: ownerPasswordHash,
       role: 'Property Owner',
       phone: '9841567890',
-      favorites: [],
       isVerified: true
     });
 
@@ -470,7 +445,6 @@ export async function seedDatabase() {
       password: tenantPasswordHash,
       role: 'Tenant',
       phone: '9851098765',
-      favorites: [],
       isVerified: true
     });
 
@@ -493,7 +467,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Approved'
+        status: 'Approved',
+        lat: 27.6787,
+        lng: 85.3094
       },
       {
         title: 'Spacious 2 BHK Family Flat in Koteshwor',
@@ -512,7 +488,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Approved'
+        status: 'Approved',
+        lat: 27.6749,
+        lng: 85.3486
       },
       {
         title: 'Beautiful Luxury Homestay Villa near Lakeside',
@@ -531,7 +509,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Approved'
+        status: 'Approved',
+        lat: 28.2104,
+        lng: 83.9575
       },
       {
         title: 'Charming 2 BHK Flat near Lakeside',
@@ -550,7 +530,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Approved'
+        status: 'Approved',
+        lat: 28.2144,
+        lng: 83.9565
       },
       {
         title: 'Affordable 1 BHK Flat near Butwal Chowk',
@@ -568,7 +550,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Approved'
+        status: 'Approved',
+        lat: 27.6976,
+        lng: 83.4542
       },
       {
         title: 'Pending Cozy Room for Rent - Bhaktapur',
@@ -586,7 +570,9 @@ export async function seedDatabase() {
           'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800'
         ],
         owner: ownerUser._id,
-        status: 'Pending'
+        status: 'Pending',
+        lat: 27.6722,
+        lng: 85.4278
       }
     ];
 
