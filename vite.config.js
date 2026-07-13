@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(googleMapsKey)
+      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(googleMapsKey),
+      'import.meta.env.VITE_GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(googleMapsKey)
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
