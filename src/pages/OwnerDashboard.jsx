@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useToast } from '../context/ToastContext.jsx';
 import { NEPAL_GEOGRAPHY, GENERAL_FACILITIES, PROPERTY_TYPES } from '../utils/nepalLocations.js';
-import { PlusCircle, ClipboardList, Home, Mail, Phone, Edit, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X, Image as ImageIcon, Send } from 'lucide-react';
+import { PlusCircle, ClipboardList, Home, Mail, Phone, Edit, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X, Image as ImageIcon, Send, MapPin, Map as MapIcon } from 'lucide-react';
+import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
+import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
-  const { showToast } = useToast();
 
   // Active Screen view: 'listings', 'add', 'edit', 'inquiries'
   const [activeTab, setActiveTab] = useState('listings');
@@ -31,6 +31,9 @@ export default function OwnerDashboard() {
   const [formBathrooms, setFormBathrooms] = useState('1');
   const [formFacilities, setFormFacilities] = useState([]);
   const [formImagesBase64, setFormImagesBase64] = useState([]); // Array of base64 image keys
+  const [formLat, setFormLat] = useState('');
+  const [formLng, setFormLng] = useState('');
+  const [showFormMap, setShowFormMap] = useState(false);
   
   // Edit listing identifier
   const [editingId, setEditingId] = useState(null);
@@ -88,6 +91,9 @@ export default function OwnerDashboard() {
     setFormBathrooms('1');
     setFormFacilities([]);
     setFormImagesBase64([]);
+    setFormLat('');
+    setFormLng('');
+    setShowFormMap(false);
     setEditingId(null);
     setFormSuccess(null);
     setFormError(null);
@@ -110,6 +116,9 @@ export default function OwnerDashboard() {
     setFormFacilities(prop.facilities || []);
     // Seed initial server images to prevent overwriting
     setFormImagesBase64(prop.images || []);
+    setFormLat(prop.lat ? String(prop.lat) : '');
+    setFormLng(prop.lng ? String(prop.lng) : '');
+    setShowFormMap(false);
     setActiveTab('edit');
   };
 
@@ -161,18 +170,15 @@ export default function OwnerDashboard() {
       bedrooms: Number(formBedrooms),
       bathrooms: Number(formBathrooms),
       facilities: formFacilities,
-      images: formImagesBase64
+      images: formImagesBase64,
+      lat: formLat ? Number(formLat) : null,
+      lng: formLng ? Number(formLng) : null
     };
 
     try {
       if (activeTab === 'edit' && editingId) {
         const res = await api.put(`/properties/${editingId}`, payload);
         setFormSuccess(res.data.message);
-        showToast({
-          type: 'success',
-          title: 'Listing updated',
-          message: 'Your changes were submitted for admin review.'
-        });
         setTimeout(() => {
           resetForm();
           loadListings();
@@ -181,11 +187,6 @@ export default function OwnerDashboard() {
       } else {
         const res = await api.post('/properties', payload);
         setFormSuccess(res.data.message);
-        showToast({
-          type: 'success',
-          title: 'Listing submitted',
-          message: 'The property is now pending admin approval.'
-        });
         setTimeout(() => {
           resetForm();
           loadListings();
@@ -194,13 +195,7 @@ export default function OwnerDashboard() {
       }
     } catch (err) {
       console.error('Form submission failure:', err);
-      const message = err.response?.data?.message || 'Transaction could not complete. Try again.';
-      setFormError(message);
-      showToast({
-        type: 'error',
-        title: 'Could not save listing',
-        message
-      });
+      setFormError(err.response?.data?.message || 'Transaction could not complete. Try again.');
     } finally {
       setSubmittingForm(false);
     }
@@ -212,19 +207,9 @@ export default function OwnerDashboard() {
       await api.delete(`/properties/${propertyId}`);
       loadListings();
       loadInquiries();
-      showToast({
-        type: 'success',
-        title: 'Listing deleted',
-        message: 'The property and its related inquiries were removed.'
-      });
     } catch (err) {
       console.error('Property deletion failing:', err);
       setFormError('Unable to delete property ad. Try again.');
-      showToast({
-        type: 'error',
-        title: 'Delete failed',
-        message: 'Unable to delete property ad. Try again.'
-      });
     }
   };
 
@@ -233,18 +218,9 @@ export default function OwnerDashboard() {
     try {
       await api.put(`/inquiries/${inquiryId}/status`, { status: newStatus });
       loadInquiries();
-      showToast({
-        type: 'success',
-        title: 'Inquiry updated',
-        message: `Marked as ${newStatus}.`
-      });
     } catch (err) {
       console.error('Failed toggling inquiry status:', err);
-      showToast({
-        type: 'error',
-        title: 'Status update failed',
-        message: 'Inquiry state update stalled.'
-      });
+      alert('Inquiry state update stalled.');
     }
   };
 
@@ -257,7 +233,7 @@ export default function OwnerDashboard() {
       {/* Title Segment */}
       <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Kotha Landlord Portal</h1>
       <p className="text-sm text-gray-500 mt-1">
-        Welcome {user?.name || 'Property Owner'}! Complete listings, evaluate lead notifications, and interact with tenants in Nepal.
+        Welcome Ramesh Adhikari! Complete listings, evaluate lead notifications, and interact with tenants in Nepal.
       </p>
 
       {/* Dashboard Custom Tab Controls */}
@@ -582,6 +558,107 @@ export default function OwnerDashboard() {
                 </div>
 
               </div>
+
+              {/* Map Coordinates Integration */}
+              <div className="mt-6 pt-6 border-t border-emerald-500/10">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#0d233e]">Map Coordinates (Pinpoint)</h4>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Pins will display on our interactive marketplace map for tenants.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextShow = !showFormMap;
+                      setShowFormMap(nextShow);
+                      if (nextShow && !formLat && !formLng) {
+                        if (formCity === 'Kathmandu' || formDistrict === 'Kathmandu') {
+                          setFormLat('27.7172');
+                          setFormLng('85.3240');
+                        } else if (formCity === 'Lalitpur' || formDistrict === 'Lalitpur') {
+                          setFormLat('27.6787');
+                          setFormLng('85.3094');
+                        } else if (formCity === 'Pokhara' || formDistrict === 'Kaski') {
+                          setFormLat('28.2104');
+                          setFormLng('83.9575');
+                        } else {
+                          setFormLat('27.7172');
+                          setFormLng('85.3240');
+                        }
+                      }
+                    }}
+                    className="self-start sm:self-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <MapIcon size={14} /> {showFormMap ? 'Hide Pinpicker Map' : 'Select Pin on Interactive Map'}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Latitude</label>
+                    <input 
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 27.7172"
+                      value={formLat}
+                      onChange={(e) => setFormLat(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs font-semibold focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Longitude</label>
+                    <input 
+                      type="number"
+                      step="any"
+                      placeholder="e.g. 85.3240"
+                      value={formLng}
+                      onChange={(e) => setFormLng(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs font-semibold focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {showFormMap && (
+                  <div className="bg-white border border-gray-150 rounded-xl overflow-hidden shadow-xs">
+                    <div className="bg-gray-50 border-b border-gray-100 px-4 py-2.5 flex items-center justify-between text-[11px] text-gray-500">
+                      <span className="font-bold flex items-center gap-1"><MapPin size={12} className="text-emerald-600" /> Draggable Location Marker</span>
+                      <span>Tip: Click on the map or drag the green marker to position your listing.</span>
+                    </div>
+                    <div className="h-64 w-full relative">
+                      <MapIntegrationWrapper fallbackHeight="256px">
+                        <Map
+                          defaultCenter={{ lat: Number(formLat) || 27.7172, lng: Number(formLng) || 85.3240 }}
+                          defaultZoom={13}
+                          mapId="OWNER_DASHBOARD_PICKER_MAP"
+                          internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
+                          style={{ width: '100%', height: '100%' }}
+                          gestureHandling="cooperative"
+                          onClick={(e) => {
+                            if (e.detail.latLng) {
+                              setFormLat(String(e.detail.latLng.lat.toFixed(6)));
+                              setFormLng(String(e.detail.latLng.lng.toFixed(6)));
+                            }
+                          }}
+                        >
+                          <AdvancedMarker
+                            position={{ lat: Number(formLat) || 27.7172, lng: Number(formLng) || 85.3240 }}
+                            draggable={true}
+                            onDragEnd={(e) => {
+                              if (e.latLng) {
+                                setFormLat(String(e.latLng.lat().toFixed(6)));
+                                setFormLng(String(e.latLng.lng().toFixed(6)));
+                              }
+                            }}
+                          >
+                            <Pin background="#059669" glyphColor="#ffffff" borderColor="#ffffff" />
+                          </AdvancedMarker>
+                        </Map>
+                      </MapIntegrationWrapper>
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
 
             {/* Row 5: Amenities tags Checkboxes */}

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useToast } from '../context/ToastContext.jsx';
 import { MapPin, Phone, Mail, User, ShieldCheck, CheckSquare, Calendar, ChevronLeft, Send, Sparkles, AlertCircle } from 'lucide-react';
+import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
+import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
 export default function PropertyDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { showToast } = useToast();
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,20 +49,9 @@ export default function PropertyDetails() {
         message: inquiryMsg
       });
       setInquirySuccess(true);
-      showToast({
-        type: 'success',
-        title: 'Inquiry sent',
-        message: 'The owner can now review your message and contact details.'
-      });
     } catch (err) {
       console.error('Inquiry dispatch error:', err);
-      const message = err.response?.data?.message || 'Failed to dispatch inquiry. Please try again.';
-      setInquiryError(message);
-      showToast({
-        type: 'error',
-        title: 'Inquiry failed',
-        message
-      });
+      setInquiryError(err.response?.data?.message || 'Failed to dispatch inquiry. Please try again.');
     } finally {
       setSubmittingInquiry(false);
     }
@@ -211,6 +201,46 @@ export default function PropertyDetails() {
             )}
           </div>
 
+          {/* Location Map Section */}
+          {property.lat && property.lng && (
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4" id="property-detail-map-card">
+              <h2 className="text-base font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-2">
+                Physical Location on Map
+              </h2>
+              <p className="text-xs text-gray-500">
+                This rental unit is located at <strong className="text-gray-700">{property.location}</strong>, in the town of <strong className="text-gray-700">{property.city}</strong>. Use the interactive map below to explore neighborhood proximity:
+              </p>
+              <div className="h-72 w-full rounded-xl overflow-hidden border border-gray-150 relative">
+                <MapIntegrationWrapper fallbackHeight="288px">
+                  <Map
+                    defaultCenter={{ lat: Number(property.lat), lng: Number(property.lng) }}
+                    defaultZoom={15}
+                    mapId="SINGLE_PROPERTY_DETAIL_MAP"
+                    internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
+                    style={{ width: '100%', height: '100%' }}
+                    gestureHandling="cooperative"
+                    disableDefaultUI={false}
+                  >
+                    <AdvancedMarker position={{ lat: Number(property.lat), lng: Number(property.lng) }}>
+                      <Pin background="#059669" glyphColor="#ffffff" borderColor="#ffffff" />
+                    </AdvancedMarker>
+                  </Map>
+                </MapIntegrationWrapper>
+              </div>
+              <div className="flex justify-between items-center text-xs pt-1">
+                <span className="text-gray-400 font-mono text-[10px]">GPS: {property.lat}, {property.lng}</span>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${property.lat},${property.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-600 hover:text-emerald-700 font-bold hover:underline"
+                >
+                  Open in Google Maps &rarr;
+                </a>
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Right side - Sticky Lead Contact Container */}
@@ -319,7 +349,7 @@ export default function PropertyDetails() {
               /* Display owner contact info directly for other roles who are authenticated */
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-3">
                 <p className="text-xs font-semibold text-emerald-800 leading-normal">
-                  You are viewing this as a registered {user.role}. Owner contact details are shown below:
+                  You are viewing this as a registered **{user.role}**. Owner phone credentials shown below:
                 </p>
                 <div className="space-y-2 border-t border-emerald-100/50 pt-2 text-xs">
                   <div className="flex items-center gap-2 font-semibold text-gray-800">
@@ -339,8 +369,8 @@ export default function PropertyDetails() {
           <div className="rounded-2xl bg-slate-50 border border-gray-150 p-5 space-y-2">
             <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Stay Safe & Secure</h4>
             <ul className="text-[11px] text-gray-500 space-y-2 leading-relaxed">
-              <li>Never send advance payment or deposit money until you physically visit the flat.</li>
-              <li>Check drinking water schedules, parking accessibility, and curfew rules directly with the owner.</li>
+              <li>&bull; Never send advanced payment or deposit money through online wallets until you physically visit the flat.</li>
+              <li>&bull; Check drinking water schedules, parking accessibility, and curfew rules with Ramesh Adhikari directly.</li>
             </ul>
           </div>
 

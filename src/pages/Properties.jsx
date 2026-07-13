@@ -2,8 +2,112 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../utils/api.js';
 import { NEPAL_GEOGRAPHY, GENERAL_FACILITIES, PROPERTY_TYPES } from '../utils/nepalLocations.js';
-import { MapPin, Search, SlidersHorizontal, Heart, BookmarkCheck } from 'lucide-react';
+import { MapPin, Search, Filter, SlidersHorizontal, Info, Heart, BookmarkCheck, Grid, Map as MapIcon, Layers } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
+import PropertiesMap from '../components/PropertiesMap.jsx';
+
+function PropertyCard({ property, user, isFavorite, toggleFavorite }) {
+  const fav = isFavorite(property._id);
+  return (
+    <article 
+      key={property._id}
+      className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full"
+      id={`property-card-${property._id}`}
+    >
+      {/* Image Area */}
+      <div className="relative h-48 bg-gray-100 overflow-hidden">
+        <img 
+          src={property.images[0]} 
+          alt={property.title} 
+          className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-500"
+          referrerPolicy="no-referrer"
+        />
+        
+        {/* Asset category labels top left */}
+        <span className="absolute top-3 left-3 bg-emerald-600/90 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider shadow-sm backdrop-blur-xs">
+          {property.propertyType}
+        </span>
+
+        {/* Favorites heart top right for Tenants */}
+        {user && user.role === 'Tenant' && (
+          <button 
+            type="button"
+            onClick={() => toggleFavorite(property._id)}
+            className="absolute top-3 right-3 flex h-8.5 w-8.5 items-center justify-center rounded-full bg-white/90 text-gray-500 hover:text-red-500 transition-colors shadow-md hover:scale-110 active:scale-95 cursor-pointer"
+            title={fav ? 'Remove Bookmarked' : 'Save Property'}
+          >
+            <Heart size={16} className={`${fav ? 'text-red-500 fill-current' : ''}`} />
+          </button>
+        )}
+
+        {/* Pricing Tag bottom-left */}
+        <div className="absolute bottom-3 left-3 bg-gray-900/85 text-white font-extrabold text-sm px-3 py-1 rounded-lg shadow-md backdrop-blur-xs">
+          Rs. {Number(property.rent).toLocaleString()} <span className="text-[10px] font-medium text-gray-300">/m</span>
+        </div>
+      </div>
+
+      {/* Content Block */}
+      <div className="p-5 flex-1 flex flex-col justify-between">
+        <div>
+          {/* Geography line */}
+          <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold mb-2">
+            <MapPin size={13} className="text-emerald-500" />
+            <span>{property.location}, {property.city}</span>
+          </div>
+
+          {/* Title */}
+          <h3 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-1 leading-snug text-base">
+            {property.title}
+          </h3>
+
+          {/* Description snippet */}
+          <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
+            {property.description}
+          </p>
+
+          {/* Facilities subset tags */}
+          {property.facilities && property.facilities.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3">
+              {property.facilities.slice(0, 3).map((f) => (
+                <span key={f} className="text-[9px] font-bold bg-gray-50 border border-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                  {f}
+                </span>
+              ))}
+              {property.facilities.length > 3 && (
+                <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50/50 px-1 py-0.5 rounded-md">
+                  +{property.facilities.length - 3} amenities
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between text-xs">
+          <span className="font-semibold text-gray-500">
+            {property.bedrooms} Bed &bull; {property.bathrooms} Bath
+          </span>
+          
+          <div className="flex items-center gap-1.5">
+            {/* Saved tag for logged in tenants */}
+            {user && user.role === 'Tenant' && fav && (
+              <span className="text-emerald-600 text-[10px] font-bold flex items-center gap-0.5 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
+                <BookmarkCheck size={12} /> Saved
+              </span>
+            )}
+            <Link 
+              to={`/properties/${property._id}`}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors text-center"
+            >
+              Explore Room
+            </Link>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function Properties() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,6 +116,7 @@ export default function Properties() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('split'); // 'split', 'grid', 'map'
 
   // States for filter sidebar controls
   const [searchWord, setSearchWord] = useState(searchParams.get('search') || '');
@@ -307,6 +412,51 @@ export default function Properties() {
 
         {/* Right Listings Grid Column */}
         <div className="lg:col-span-3">
+
+          {/* Header with view toggle controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 bg-slate-50 border border-gray-100 p-3 rounded-2xl">
+            <div className="text-xs font-bold text-[#0d233e]" id="listings-count-label">
+              Found {properties.length} approved rentals in Nepal
+            </div>
+            <div className="flex bg-white border border-gray-200 p-1 rounded-xl self-start sm:self-auto shadow-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('split')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'split' 
+                    ? 'bg-emerald-600 text-white shadow-xs' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+                title="Split map and list side-by-side"
+              >
+                <Layers size={14} /> <span className="hidden xs:inline">Split View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'grid' 
+                    ? 'bg-emerald-600 text-white shadow-xs' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+                title="View full width grid list"
+              >
+                <Grid size={14} /> <span className="hidden xs:inline">Grid Only</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('map')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'map' 
+                    ? 'bg-emerald-600 text-white shadow-xs' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+                title="View interactive full screen map"
+              >
+                <MapIcon size={14} /> <span className="hidden xs:inline">Map Only</span>
+              </button>
+            </div>
+          </div>
           
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" id="properties-loading-skeletons">
@@ -346,106 +496,54 @@ export default function Properties() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" id="properties-listings-grid">
-              {properties.map((property) => {
-                const fav = isFavorite(property._id);
-                return (
-                  <article 
-                    key={property._id}
-                    className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
-                  >
-                    {/* Image Area */}
-                    <div className="relative h-48 bg-gray-100 overflow-hidden">
-                      <img 
-                        src={property.images[0]} 
-                        alt={property.title} 
-                        className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                      
-                      {/* Asset category labels top left */}
-                      <span className="absolute top-3 left-3 bg-emerald-600/90 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider shadow-sm backdrop-blur-xs">
-                        {property.propertyType}
-                      </span>
-
-                      {/* Favorites heart top right for Tenants */}
-                      {user && user.role === 'Tenant' && (
-                        <button 
-                          onClick={() => toggleFavorite(property._id)}
-                          className="absolute top-3 right-3 flex h-8.5 w-8.5 items-center justify-center rounded-full bg-white/90 text-gray-500 hover:text-red-500 transition-colors shadow-md hover:scale-110 active:scale-95"
-                          title={fav ? 'Remove Bookmarked' : 'Save Property'}
-                        >
-                          <Heart size={16} className={`${fav ? 'text-red-500 fill-current' : ''}`} />
-                        </button>
-                      )}
-
-                      {/* Pricing Tag bottom-left */}
-                      <div className="absolute bottom-3 left-3 bg-gray-900/85 text-white font-extrabold text-sm px-3 py-1 rounded-lg shadow-md backdrop-blur-xs">
-                        Rs. {Number(property.rent).toLocaleString()} <span className="text-[10px] font-medium text-gray-300">/m</span>
-                      </div>
+            <div id="properties-view-wrapper">
+              {/* Split Screen Mode */}
+              {viewMode === 'split' && (
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6" id="split-screen-layout">
+                  <div className="xl:col-span-7">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" id="split-grid-list">
+                      {properties.map((property) => (
+                        <PropertyCard 
+                          key={property._id}
+                          property={property}
+                          user={user}
+                          isFavorite={isFavorite}
+                          toggleFavorite={toggleFavorite}
+                        />
+                      ))}
                     </div>
+                  </div>
+                  <div className="xl:col-span-5 sticky top-24 h-[calc(100vh-160px)] rounded-2xl overflow-hidden hidden xl:block border border-gray-150" id="split-map-aside">
+                    <MapIntegrationWrapper fallbackHeight="100%">
+                      <PropertiesMap properties={properties} />
+                    </MapIntegrationWrapper>
+                  </div>
+                </div>
+              )}
 
-                    {/* Content Block */}
-                    <div className="p-5 flex-1 flex flex-col justify-between">
-                      <div>
-                        {/* Geography line */}
-                        <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold mb-2">
-                          <MapPin size={13} className="text-emerald-500" />
-                          <span>{property.location}, {property.city}</span>
-                        </div>
+              {/* Grid Mode */}
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" id="properties-listings-grid">
+                  {properties.map((property) => (
+                    <PropertyCard 
+                      key={property._id}
+                      property={property}
+                      user={user}
+                      isFavorite={isFavorite}
+                      toggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              )}
 
-                        {/* Title */}
-                        <h3 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-1 leading-snug">
-                          {property.title}
-                        </h3>
-
-                        {/* Description snippet */}
-                        <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-                          {property.description}
-                        </p>
-
-                        {/* Facilities subset tags */}
-                        {property.facilities && property.facilities.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {property.facilities.slice(0, 3).map((f) => (
-                              <span key={f} className="text-[9px] font-bold bg-gray-50 border border-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                                {f}
-                              </span>
-                            ))}
-                            {property.facilities.length > 3 && (
-                              <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50/50 px-1 py-0.5 rounded-md">
-                                +{property.facilities.length - 3} amenities
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Footer actions */}
-                      <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between text-xs">
-                        <span className="font-semibold text-gray-500">
-                          {property.bedrooms} Bed &bull; {property.bathrooms} Bath
-                        </span>
-                        
-                        <div className="flex items-center gap-1.5">
-                          {/* Saved tag for logged in tenants */}
-                          {user && user.role === 'Tenant' && fav && (
-                            <span className="text-emerald-600 text-[10px] font-bold flex items-center gap-0.5 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
-                              <BookmarkCheck size={12} /> Saved
-                            </span>
-                          )}
-                          <Link 
-                            to={`/properties/${property._id}`}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors"
-                          >
-                            Explore Room
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+              {/* Map Mode */}
+              {viewMode === 'map' && (
+                <div className="h-[calc(100vh-200px)] min-h-[480px] w-full border border-gray-150 rounded-2xl overflow-hidden" id="full-screen-map-layout">
+                  <MapIntegrationWrapper fallbackHeight="100%">
+                    <PropertiesMap properties={properties} style={{ width: '100%', height: '100%' }} />
+                  </MapIntegrationWrapper>
+                </div>
+              )}
             </div>
           )}
 

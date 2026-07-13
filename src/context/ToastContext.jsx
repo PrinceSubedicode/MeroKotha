@@ -1,73 +1,91 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { CheckCircle2, Info, X, XCircle } from 'lucide-react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 
 const ToastContext = createContext(null);
-
-const toneStyles = {
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-950',
-  error: 'border-red-200 bg-red-50 text-red-950',
-  info: 'border-slate-200 bg-white text-slate-900'
-};
-
-const toneIcons = {
-  success: CheckCircle2,
-  error: XCircle,
-  info: Info
-};
-
-export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-
-  const dismissToast = useCallback((id) => {
-    setToasts(current => current.filter(toast => toast.id !== id));
-  }, []);
-
-  const showToast = useCallback(({ title, message, type = 'info' }) => {
-    const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    setToasts(current => [...current, { id, title, message, type }]);
-    window.setTimeout(() => dismissToast(id), 4200);
-  }, [dismissToast]);
-
-  const value = useMemo(() => ({ showToast, dismissToast }), [showToast, dismissToast]);
-
-  return (
-    <ToastContext.Provider value={value}>
-      {children}
-
-      <div className="fixed right-4 top-20 z-[80] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3 pointer-events-none">
-        {toasts.map((toast) => {
-          const Icon = toneIcons[toast.type] || Info;
-          return (
-            <div
-              key={toast.id}
-              className={`pointer-events-auto flex items-start gap-3 rounded-2xl border p-4 shadow-xl shadow-slate-900/10 backdrop-blur ${toneStyles[toast.type] || toneStyles.info}`}
-              role="status"
-            >
-              <Icon size={18} className="mt-0.5 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold leading-snug">{toast.title}</p>
-                {toast.message && <p className="mt-1 text-xs leading-relaxed opacity-80">{toast.message}</p>}
-              </div>
-              <button
-                type="button"
-                onClick={() => dismissToast(toast.id)}
-                className="rounded-lg p-1 opacity-60 transition hover:bg-black/5 hover:opacity-100"
-                aria-label="Dismiss notification"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    </ToastContext.Provider>
-  );
-}
 
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used inside ToastProvider');
+    throw new Error('useToast must be used within a ToastProvider');
   }
   return context;
+}
+
+export function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((message, type = 'success', duration = 3500) => {
+    const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    setToasts((prev) => [...prev, { id, message, type }]);
+
+    setTimeout(() => {
+      removeToast(id);
+    }, duration);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const success = useCallback((msg, dur) => addToast(msg, 'success', dur), [addToast]);
+  const error = useCallback((msg, dur) => addToast(msg, 'error', dur), [addToast]);
+  const warning = useCallback((msg, dur) => addToast(msg, 'warning', dur), [addToast]);
+  const info = useCallback((msg, dur) => addToast(msg, 'info', dur), [addToast]);
+
+  return (
+    <ToastContext.Provider value={{ toast: addToast, success, error, warning, info, removeToast }}>
+      {children}
+      
+      {/* Toast Notification Portal / List */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none" id="toast-portal-container">
+        <AnimatePresence>
+          {toasts.map((t) => {
+            let Icon = Info;
+            let bgColor = 'bg-blue-50 border-blue-200 text-blue-800';
+            let iconColor = 'text-blue-500';
+
+            if (t.type === 'success') {
+              Icon = CheckCircle;
+              bgColor = 'bg-emerald-50 border-emerald-100 text-emerald-900 dark:bg-emerald-950/90 dark:border-emerald-800 dark:text-emerald-100';
+              iconColor = 'text-emerald-600 dark:text-emerald-400';
+            } else if (t.type === 'error') {
+              Icon = AlertTriangle;
+              bgColor = 'bg-rose-50 border-rose-100 text-rose-900 dark:bg-rose-950/90 dark:border-rose-800 dark:text-rose-100';
+              iconColor = 'text-rose-600 dark:text-rose-400';
+            } else if (t.type === 'warning') {
+              Icon = AlertTriangle;
+              bgColor = 'bg-amber-50 border-amber-100 text-amber-900 dark:bg-amber-950/90 dark:border-amber-800 dark:text-amber-100';
+              iconColor = 'text-amber-600 dark:text-amber-400';
+            }
+
+            return (
+              <motion.div
+                key={t.id}
+                layout
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
+                className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg pointer-events-auto backdrop-blur-md ${bgColor}`}
+                id={`toast-${t.id}`}
+              >
+                <div className={`shrink-0 mt-0.5 ${iconColor}`}>
+                  <Icon size={18} />
+                </div>
+                <div className="flex-grow text-xs font-medium leading-relaxed">
+                  {t.message}
+                </div>
+                <button
+                  onClick={() => removeToast(t.id)}
+                  className="shrink-0 p-0.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <X size={14} />
+                </button>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+    </ToastContext.Provider>
+  );
 }
