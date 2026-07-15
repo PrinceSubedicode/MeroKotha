@@ -14,9 +14,7 @@ import {
   Building, 
   Compass, 
   Star, 
-  Heart, 
-  Sparkles,
-  ClipboardList
+  Sparkles
 } from 'lucide-react';
 import { NEPAL_GEOGRAPHY } from '../utils/nepalLocations.js';
 
@@ -128,7 +126,7 @@ const demoProperties = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, favorites, toggleFavorite } = useAuth();
+  const { user, favorites } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -180,145 +178,145 @@ export default function Home() {
   return (
     <div className="flex-1" id="merokotha-homepage">
       
-      {/* Booking.com Corporate Royal Blue Hero Section */}
-      <section className="bg-[#003580] pt-8 pb-20 px-4 sm:px-6 lg:px-8 text-white relative border-b border-blue-900">
+      {/* Premium Booking.com inspired responsive hero - beautifully adaptive to Light and Dark modes */}
+      <section className="bg-gradient-to-br from-[#003580] via-[#00224f] to-[#011631] dark:from-[#0f172a] dark:to-[#020617] pt-10 pb-24 px-4 sm:px-6 lg:px-8 text-white relative border-b border-[#00224f] dark:border-slate-800 transition-colors duration-300">
         
-        {/* Subtle geometric grid background overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+        {/* Elegant structural grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
         
         <div className="mx-auto max-w-7xl relative z-10">
           
-          {/* Booking.com Inspired Category Pill Navigation */}
-          <div className="flex items-center gap-2 mb-10 overflow-x-auto scrollbar-none pb-2">
+          {/* Category Pill Navigation - Sleek & Modern */}
+          <div className="flex items-center gap-2.5 mb-10 overflow-x-auto scrollbar-none pb-2">
             <button
               onClick={() => handleTabChange('stays', 'any')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'stays' 
-                  ? 'bg-white/15 border border-white text-white' 
-                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+                  ? 'bg-white/15 border-white text-white shadow-sm' 
+                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <Bed size={16} />
+              <Bed size={15} />
               <span>All Stays</span>
             </button>
             <button
               onClick={() => handleTabChange('rooms', 'Room')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'rooms' 
-                  ? 'bg-white/15 border border-white text-white' 
-                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+                  ? 'bg-white/15 border-white text-white shadow-sm' 
+                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <Building size={16} />
+              <Building size={15} />
               <span>Rooms</span>
             </button>
             <button
               onClick={() => handleTabChange('flats', 'Flat')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'flats' 
-                  ? 'bg-white/15 border border-white text-white' 
-                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+                  ? 'bg-white/15 border-white text-white shadow-sm' 
+                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <HouseIcon size={16} />
+              <HouseIcon size={15} />
               <span>Entire Flats</span>
             </button>
             <button
               onClick={() => handleTabChange('houses', 'House')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'houses' 
-                  ? 'bg-white/15 border border-white text-white' 
-                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+                  ? 'bg-white/15 border-white text-white shadow-sm' 
+                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
-              <Compass size={16} />
+              <Compass size={15} />
               <span>Houses & Villas</span>
             </button>
             <Link
               to="/contact"
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white border border-transparent transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold text-white/80 hover:bg-white/10 hover:text-white border border-transparent transition-all whitespace-nowrap"
             >
-              <Sparkles size={16} />
+              <Sparkles size={15} />
               <span>Exclusive Deals</span>
             </Link>
           </div>
 
-          {/* Bold Dynamic Booking.com Title Header */}
+          {/* Simple Clean Title Header */}
           <div className="max-w-3xl mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-3 leading-tight">
               Where to next, {user ? user.name.split(' ')[0] : 'traveler'}?
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-white/85 font-medium">
+            <p className="text-sm sm:text-base text-white/80 font-medium">
               Find budget-friendly rooms, flats, and homes with zero broker commissions in Nepal.
             </p>
           </div>
 
-          {/* Yellow/Amber Highlight Framed Search Bar (Booking.com signature style) */}
+          {/* Golden Highlight Border Framed Search Box - Clean, responsive, and elegant */}
           <div className="bg-[#febb02] p-1 rounded-xl shadow-xl max-w-6xl">
-            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 lg:grid-cols-12 bg-white rounded-lg p-1.5 gap-1 items-stretch text-gray-800">
+            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-lg p-1.5 gap-1 items-stretch text-gray-800 dark:text-gray-100 transition-colors duration-300">
               
-              {/* Where are you going? Input */}
-              <div className="lg:col-span-5 flex items-center gap-2 px-3 py-2.5 border-b lg:border-b-0 lg:border-r border-gray-100 min-w-0">
-                <MapPin className="text-gray-400 shrink-0" size={20} />
+              {/* Where input field */}
+              <div className="lg:col-span-5 flex items-center gap-2 px-3 py-2 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-slate-850 min-w-0">
+                <MapPin className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Where in Nepal?</p>
+                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Where in Nepal?</p>
                   <input 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Enter area, neighborhood, or city (e.g. Jhamsikhel)"
-                    className="w-full bg-transparent text-sm font-semibold text-gray-800 placeholder-gray-400 border-none outline-none focus:outline-none focus:ring-0 p-0"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-none outline-none focus:outline-none focus:ring-0 p-0"
                     id="search-input"
                   />
                 </div>
               </div>
 
-              {/* Asset Type Selector */}
-              <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2.5 border-b lg:border-b-0 lg:border-r border-gray-100">
-                <Building className="text-gray-400 shrink-0" size={20} />
+              {/* Property Type drop menu */}
+              <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-slate-850">
+                <Building className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Property Type</p>
+                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Property Type</p>
                   <select 
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full bg-transparent text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
                     id="type-select"
                   >
-                    <option value="any">Any (Rooms & Flats)</option>
-                    <option value="Room">Single Room</option>
-                    <option value="Flat">Entire Flat</option>
-                    <option value="House">Complete House</option>
+                    <option value="any" className="dark:bg-slate-900 text-gray-800 dark:text-white">Any (Rooms & Flats)</option>
+                    <option value="Room" className="dark:bg-slate-900 text-gray-800 dark:text-white">Single Room</option>
+                    <option value="Flat" className="dark:bg-slate-900 text-gray-800 dark:text-white">Entire Flat</option>
+                    <option value="House" className="dark:bg-slate-900 text-gray-800 dark:text-white">Complete House</option>
                   </select>
                 </div>
               </div>
 
-              {/* City Filter Selection */}
-              <div className="lg:col-span-2 flex items-center gap-2 px-3 py-2.5">
-                <Compass className="text-gray-400 shrink-0" size={20} />
+              {/* City Selection dropdown */}
+              <div className="lg:col-span-2 flex items-center gap-2 px-3 py-2">
+                <Compass className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Select City</p>
+                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Select City</p>
                   <select 
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    className="w-full bg-transparent text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
                     id="city-select"
                   >
-                    <option value="any">All Cities</option>
+                    <option value="any" className="dark:bg-slate-900 text-gray-800 dark:text-white">All Cities</option>
                     {allCities.map((city) => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city} className="dark:bg-slate-900 text-gray-800 dark:text-white">{city}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Action Search Button */}
+              {/* Booking Submit search button */}
               <div className="lg:col-span-2 flex">
                 <button 
                   type="submit"
-                  className="flex-1 bg-[#003580] hover:bg-[#00224f] text-white font-bold rounded-md px-6 py-3 transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
+                  className="flex-1 bg-[#003580] dark:bg-blue-600 hover:bg-[#00224f] dark:hover:bg-blue-700 text-white font-bold rounded-md px-5 py-3.5 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md"
                   id="search-submit-btn"
                 >
-                  <Search size={18} />
+                  <Search size={16} />
                   <span>Search</span>
                 </button>
               </div>
@@ -329,42 +327,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust & Features Value Props Segment */}
+      {/* Trust & Verification badging segment */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative -mt-8 z-20">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-150 dark:border-slate-800 py-8 px-6 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-150 dark:border-slate-800/80 py-8 px-6 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-8 transition-colors duration-300">
           <div className="flex gap-4 items-start">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
-              <CheckCircle size={24} />
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+              <CheckCircle size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Direct Verification</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Direct Verification</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Every room and price is verified physically or directly with the verified landlords.</p>
             </div>
           </div>
 
           <div className="flex gap-4 items-start">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
-              <Shield size={24} />
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+              <Shield size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Zero Middleman Fees</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Zero Middleman Fees</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Connect, chat, and rent directly. Absolutely zero commission cuts or broker charges.</p>
             </div>
           </div>
 
           <div className="flex gap-4 items-start">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
-              <Key size={24} />
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+              <Key size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Instant Direct Inquiries</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Instant Direct Inquiries</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Send an inquiry instantly with your contact details to start immediate room viewings.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Properties Showcase (Stunning layout with real images) */}
+      {/* Featured Properties Showcase */}
       <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
           <div>
@@ -396,18 +394,17 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-listings-container">
             {displayProperties.map((property) => {
-              const isFav = favorites.includes(property._id);
               return (
                 <article 
                   key={property._id}
-                  className="group bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-[420px]"
+                  className="group bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800/80 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col h-[410px]"
                 >
                   {/* Photo Section with Badge & Favorite Trigger */}
-                  <div className="relative h-52 w-full overflow-hidden bg-gray-100 dark:bg-slate-800">
+                  <div className="relative h-48 w-full overflow-hidden bg-gray-100 dark:bg-slate-800">
                     <img 
                       src={property.images[0]} 
                       alt={property.title} 
-                      className="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                      className="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                       referrerPolicy="no-referrer"
                       loading="lazy"
                     />
@@ -436,7 +433,7 @@ export default function Home() {
                     <div>
                       {/* Location details */}
                       <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs font-semibold mb-2">
-                        <MapPin size={14} className="text-[#003580] dark:text-blue-400 shrink-0" />
+                        <MapPin size={13} className="text-[#003580] dark:text-blue-400 shrink-0" />
                         <span className="truncate">{property.location}, {property.city}</span>
                       </div>
 
@@ -463,13 +460,13 @@ export default function Home() {
                     </div>
 
                     {/* Action buttons bar */}
-                    <div className="border-t border-gray-100 dark:border-slate-800 pt-4 mt-4 flex items-center justify-between text-xs">
+                    <div className="border-t border-gray-100 dark:border-slate-800/80 pt-4 mt-4 flex items-center justify-between text-xs">
                       <span className="font-semibold text-gray-500 dark:text-gray-400">
                         Rooms: <strong className="text-gray-800 dark:text-white">{property.bedrooms} Bed</strong> / <strong className="text-gray-800 dark:text-white">{property.bathrooms} Bath</strong>
                       </span>
                       <Link 
                         to={`/properties/${property._id}`}
-                        className="px-3.5 py-1.5 bg-[#003580] hover:bg-[#00224f] text-white text-[11px] font-black rounded-md transition-all shadow-sm"
+                        className="px-3.5 py-1.5 bg-[#003580] dark:bg-blue-600 hover:bg-[#00224f] dark:hover:bg-blue-700 text-white text-[11px] font-black rounded-md transition-all shadow-sm"
                       >
                         View Details
                       </Link>
@@ -483,7 +480,7 @@ export default function Home() {
       </section>
 
       {/* Nepal City Directory Grid */}
-      <section className="py-16 bg-gray-50 dark:bg-slate-950 border-y border-gray-150 dark:border-slate-800">
+      <section className="py-16 bg-gray-50 dark:bg-slate-950 border-y border-gray-150 dark:border-slate-800 transition-colors duration-300">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Explore Top Locations in Nepal</h2>
@@ -569,7 +566,7 @@ export default function Home() {
       </section>
 
       {/* Tutorial How it Works Segment */}
-      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
+      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900 transition-colors duration-300">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">How simple it works</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
@@ -578,7 +575,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           
           {/* For Tenants */}
-          <div className="bg-blue-50/40 dark:bg-slate-800/50 rounded-2xl p-8 border border-blue-500/10">
+          <div className="bg-blue-50/20 dark:bg-slate-800/50 rounded-2xl p-8 border border-blue-500/10">
             <h3 className="text-xl font-bold text-blue-950 dark:text-blue-300 mb-6 flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm">1</span>
               For Rental Seekers (Tenants)
@@ -600,7 +597,7 @@ export default function Home() {
           </div>
 
           {/* For Owners */}
-          <div className="bg-indigo-50/40 dark:bg-slate-800/50 rounded-2xl p-8 border border-indigo-500/10">
+          <div className="bg-indigo-50/20 dark:bg-slate-800/50 rounded-2xl p-8 border border-indigo-500/10">
             <h3 className="text-xl font-bold text-indigo-950 dark:text-indigo-300 mb-6 flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">2</span>
               For Property Owners & Landlords
