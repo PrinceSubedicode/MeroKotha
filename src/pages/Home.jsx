@@ -1,11 +1,134 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api.js';
-import { Search, MapPin, CheckCircle, Shield, Key, ArrowRight, Home as HouseIcon, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext.jsx';
+import { 
+  Search, 
+  MapPin, 
+  CheckCircle, 
+  Shield, 
+  Key, 
+  ArrowRight, 
+  Home as HouseIcon, 
+  Bed, 
+  Building, 
+  Compass, 
+  Star, 
+  Heart, 
+  Sparkles,
+  ClipboardList
+} from 'lucide-react';
 import { NEPAL_GEOGRAPHY } from '../utils/nepalLocations.js';
+
+// Gorgeous fallback Nepalese demo room/flat properties
+const demoProperties = [
+  {
+    _id: 'demo-1',
+    title: 'Cozy Modern Studio Room with Sunny Balcony',
+    location: 'Jhamsikhel, Lalitpur',
+    city: 'Lalitpur',
+    propertyType: 'Room',
+    rent: 12000,
+    bedrooms: 1,
+    bathrooms: 1,
+    description: 'Beautiful, fully furnished sunny room in the heart of Jhamsikhel. Includes high-speed fiber internet, hot water, and a shared kitchen garden access.',
+    images: [
+      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.8,
+    reviewsCount: 24,
+    features: ['Furnished', 'Balcony', 'Hot Water', 'Wifi']
+  },
+  {
+    _id: 'demo-2',
+    title: 'Elegant 2 BHK Apartment Flat near Ring Road',
+    location: 'Maharajgunj, Kathmandu',
+    city: 'Kathmandu',
+    propertyType: 'Flat',
+    rent: 28000,
+    bedrooms: 2,
+    bathrooms: 2,
+    description: 'Spacious second-floor flat with 2 large bedrooms, living hall, kitchen, and private parking. Located in a quiet, safe residential neighborhood.',
+    images: [
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.9,
+    reviewsCount: 16,
+    features: ['Parking', 'Kitchen', '24h Water', 'Security']
+  },
+  {
+    _id: 'demo-3',
+    title: 'Scenic Rooftop Penthouse with Mountain Views',
+    location: 'Lakeside, Pokhara',
+    city: 'Pokhara',
+    propertyType: 'Room',
+    rent: 15000,
+    bedrooms: 1,
+    bathrooms: 1,
+    description: 'A gorgeous top-floor penthouse room featuring a stunning view of Phewa Lake and the Annapurna range. Peaceful, breezy atmosphere ideal for students/digital nomads.',
+    images: [
+      'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.7,
+    reviewsCount: 32,
+    features: ['Rooftop', 'Furnished', 'Mountain View', 'Wifi']
+  },
+  {
+    _id: 'demo-4',
+    title: 'Spacious 3 BHK Full House with Private Courtyard',
+    location: 'Sauraha, Chitwan',
+    city: 'Chitwan',
+    propertyType: 'House',
+    rent: 45000,
+    bedrooms: 3,
+    bathrooms: 2,
+    description: 'A charming full family house near the Chitwan National Park. Spacious green garden, pet-friendly courtyard, fully air-conditioned rooms, and dedicated solar backup.',
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.9,
+    reviewsCount: 11,
+    features: ['Garden', 'AC', 'Pet Friendly', 'Solar Power']
+  },
+  {
+    _id: 'demo-5',
+    title: 'Compact Furnished Room for Students & Professionals',
+    location: 'Baneshwor, Kathmandu',
+    city: 'Kathmandu',
+    propertyType: 'Room',
+    rent: 8500,
+    bedrooms: 1,
+    bathrooms: 1,
+    description: 'Budget-friendly room close to major colleges and public transport hubs. Features high-speed Wi-Fi, drinking water filter, and private study desk.',
+    images: [
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.6,
+    reviewsCount: 41,
+    features: ['Budget Friendly', 'Study Desk', 'Wifi', 'Water Filter']
+  },
+  {
+    _id: 'demo-6',
+    title: 'Premium 1 BHK Flat with Modular Kitchen',
+    location: 'Sanepa, Lalitpur',
+    city: 'Lalitpur',
+    propertyType: 'Flat',
+    rent: 20000,
+    bedrooms: 1,
+    bathrooms: 1,
+    description: 'Newly constructed high-end flat with modular kitchen cabinetry, private geyser, and gorgeous lighting. Perfectly suited for single expats or couples.',
+    images: [
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=800'
+    ],
+    rating: 4.8,
+    reviewsCount: 19,
+    features: ['Modular Kitchen', 'Geyser', 'Modern Design', 'Quiet']
+  }
+];
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, favorites, toggleFavorite } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,14 +137,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('any');
   const [selectedCity, setSelectedCity] = useState('any');
+  const [activeTab, setActiveTab] = useState('stays'); // 'stays' = any, 'rooms' = Room, 'flats' = Flat, 'houses' = House
 
   // Load properties on mount
   useEffect(() => {
     async function fetchFeatured() {
       try {
         const res = await api.get('/properties');
-        // Show up to 3 for Home Page featured carousel
-        setProperties(res.data.slice(0, 3));
+        setProperties(res.data);
       } catch (err) {
         console.error('Featured properties fetch failure:', err);
         setError('Unable to load listings. Check backend connection.');
@@ -33,225 +156,338 @@ export default function Home() {
   }, []);
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     let url = `/properties?search=${encodeURIComponent(searchQuery)}`;
     if (selectedType !== 'any') url += `&propertyType=${selectedType}`;
     if (selectedCity !== 'any') url += `&city=${selectedCity}`;
     navigate(url);
   };
 
-  // Compile unique cities for the hero dropdown
+  // When active tab changes, pre-configure the type
+  const handleTabChange = (tabId, typeValue) => {
+    setActiveTab(tabId);
+    setSelectedType(typeValue);
+  };
+
+  // Compile unique cities for the hero dropdown or filter
   const allCities = Object.values(NEPAL_GEOGRAPHY).flatMap(prov => prov.cities);
+
+  // Merge real properties from backend with beautiful demo rooms
+  const displayProperties = properties.length > 0 
+    ? [...properties, ...demoProperties].slice(0, 6) 
+    : demoProperties;
 
   return (
     <div className="flex-1" id="merokotha-homepage">
       
-      {/* Hero Search Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#ece8e1] via-[#fdfbf7] to-[#ece8e1]/60 py-20 pb-28 text-gray-800 border-b border-gray-150">
-        {/* Abstract decorative circles */}
-        <div className="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-emerald-500/5 blur-3xl"></div>
-        <div className="absolute top-1/2 right-10 h-96 w-96 rounded-full bg-indigo-500/5 blur-3xl"></div>
+      {/* Booking.com Corporate Royal Blue Hero Section */}
+      <section className="bg-[#003580] pt-8 pb-20 px-4 sm:px-6 lg:px-8 text-white relative border-b border-blue-900">
+        
+        {/* Subtle geometric grid background overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
+        
+        <div className="mx-auto max-w-7xl relative z-10">
+          
+          {/* Booking.com Inspired Category Pill Navigation */}
+          <div className="flex items-center gap-2 mb-10 overflow-x-auto scrollbar-none pb-2">
+            <button
+              onClick={() => handleTabChange('stays', 'any')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                activeTab === 'stays' 
+                  ? 'bg-white/15 border border-white text-white' 
+                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+              }`}
+            >
+              <Bed size={16} />
+              <span>All Stays</span>
+            </button>
+            <button
+              onClick={() => handleTabChange('rooms', 'Room')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                activeTab === 'rooms' 
+                  ? 'bg-white/15 border border-white text-white' 
+                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+              }`}
+            >
+              <Building size={16} />
+              <span>Rooms</span>
+            </button>
+            <button
+              onClick={() => handleTabChange('flats', 'Flat')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                activeTab === 'flats' 
+                  ? 'bg-white/15 border border-white text-white' 
+                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+              }`}
+            >
+              <HouseIcon size={16} />
+              <span>Entire Flats</span>
+            </button>
+            <button
+              onClick={() => handleTabChange('houses', 'House')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
+                activeTab === 'houses' 
+                  ? 'bg-white/15 border border-white text-white' 
+                  : 'text-white/85 hover:bg-white/10 hover:text-white border border-transparent'
+              }`}
+            >
+              <Compass size={16} />
+              <span>Houses & Villas</span>
+            </button>
+            <Link
+              to="/contact"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white border border-transparent transition-all whitespace-nowrap"
+            >
+              <Sparkles size={16} />
+              <span>Exclusive Deals</span>
+            </Link>
+          </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto">
-            {/* Title */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 font-serif tracking-tight font-normal text-gray-900">
-              Find your perfect space in <span className="italic font-normal text-indigo-600">Nepal</span>
+          {/* Bold Dynamic Booking.com Title Header */}
+          <div className="max-w-3xl mb-8">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+              Where to next, {user ? user.name.split(' ')[0] : 'traveler'}?
             </h1>
-            <p className="text-base sm:text-lg text-gray-600 mb-10 leading-relaxed max-w-2xl mx-auto">
-              Rent zero-brokerage verified rooms, flats, student apartments, and luxury homestays across Kathmandu, Pokhara, Lalitpur, and all major cities of Nepal.
+            <p className="text-sm sm:text-base lg:text-lg text-white/85 font-medium">
+              Find budget-friendly rooms, flats, and homes with zero broker commissions in Nepal.
             </p>
           </div>
 
-          {/* Search Box Card */}
-          <div className="mx-auto max-w-4xl bg-white rounded-2xl p-4 sm:p-6 shadow-2xl text-gray-800 border border-gray-100" id="homepage-search-card">
-            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          {/* Yellow/Amber Highlight Framed Search Bar (Booking.com signature style) */}
+          <div className="bg-[#febb02] p-1 rounded-xl shadow-xl max-w-6xl">
+            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 lg:grid-cols-12 bg-white rounded-lg p-1.5 gap-1 items-stretch text-gray-800">
               
-              {/* Query Keyword Search */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                  Where in Nepal?
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-3.5 text-emerald-600" size={18} />
+              {/* Where are you going? Input */}
+              <div className="lg:col-span-5 flex items-center gap-2 px-3 py-2.5 border-b lg:border-b-0 lg:border-r border-gray-100 min-w-0">
+                <MapPin className="text-gray-400 shrink-0" size={20} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Where in Nepal?</p>
                   <input 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Enter area, city or district (e.g. Jhamsikhel)"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm font-medium focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    placeholder="Enter area, neighborhood, or city (e.g. Jhamsikhel)"
+                    className="w-full bg-transparent text-sm font-semibold text-gray-800 placeholder-gray-400 border-none outline-none focus:outline-none focus:ring-0 p-0"
                     id="search-input"
                   />
                 </div>
               </div>
 
-              {/* Property Type Dropdown */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                  Asset Type
-                </label>
-                <select 
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm font-semibold focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  id="type-select"
-                >
-                  <option value="any">Any (Room/Flat/House)</option>
-                  <option value="Room">Single Room</option>
-                  <option value="Flat">Entire Flat</option>
-                  <option value="House">Complete House</option>
-                </select>
+              {/* Asset Type Selector */}
+              <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2.5 border-b lg:border-b-0 lg:border-r border-gray-100">
+                <Building className="text-gray-400 shrink-0" size={20} />
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Property Type</p>
+                  <select 
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full bg-transparent text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    id="type-select"
+                  >
+                    <option value="any">Any (Rooms & Flats)</option>
+                    <option value="Room">Single Room</option>
+                    <option value="Flat">Entire Flat</option>
+                    <option value="House">Complete House</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Find Button */}
-              <button 
-                type="submit"
-                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 px-6 text-sm font-bold text-white transition-all shadow-md shadow-emerald-700/20 w-full"
-                id="search-submit-btn"
-              >
-                <Search size={18} /> Search
-              </button>
+              {/* City Filter Selection */}
+              <div className="lg:col-span-2 flex items-center gap-2 px-3 py-2.5">
+                <Compass className="text-gray-400 shrink-0" size={20} />
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Select City</p>
+                  <select 
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    className="w-full bg-transparent text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    id="city-select"
+                  >
+                    <option value="any">All Cities</option>
+                    {allCities.map((city) => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Action Search Button */}
+              <div className="lg:col-span-2 flex">
+                <button 
+                  type="submit"
+                  className="flex-1 bg-[#003580] hover:bg-[#00224f] text-white font-bold rounded-md px-6 py-3 transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
+                  id="search-submit-btn"
+                >
+                  <Search size={18} />
+                  <span>Search</span>
+                </button>
+              </div>
 
             </form>
           </div>
+
         </div>
       </section>
 
-      {/* Feature stats summary segment */}
-      <section className="bg-white py-12 relative -mt-8 mx-auto max-w-6xl rounded-2xl shadow-xl border border-gray-100 z-20">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 justify-items-center text-center px-6">
-          <div className="flex flex-col items-center max-w-xs">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-4 font-bold">
+      {/* Trust & Features Value Props Segment */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative -mt-8 z-20">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-150 dark:border-slate-800 py-8 px-6 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex gap-4 items-start">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
               <CheckCircle size={24} />
             </span>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Direct Verification</h3>
-            <p className="text-xs text-gray-500">Every room and price on our map is verified directly with property owners.</p>
+            <div>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Direct Verification</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Every room and price is verified physically or directly with the verified landlords.</p>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center max-w-xs">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-4 font-bold">
+          <div className="flex gap-4 items-start">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
               <Shield size={24} />
             </span>
-            <h3 className="No Broker Commission text-lg font-bold text-gray-800 mb-1">No Brokers, No Fees</h3>
-            <p className="text-xs text-gray-500">Connect directly. Zero agent commissions, middleman cuts, or secret fees.</p>
+            <div>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Zero Middleman Fees</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Connect, chat, and rent directly. Absolutely zero commission cuts or broker charges.</p>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center max-w-xs">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-4 font-bold">
+          <div className="flex gap-4 items-start">
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold">
               <Key size={24} />
             </span>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Easy Inquiries</h3>
-            <p className="text-xs text-gray-500">Find rooms, submit message details, and schedule physical inspection on site.</p>
+            <div>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-1">Instant Direct Inquiries</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Send an inquiry instantly with your contact details to start immediate room viewings.</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Properties Section */}
+      {/* Featured Properties Showcase (Stunning layout with real images) */}
       <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              Featured Verified Listings
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              Trending Properties in Nepal
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Recently approved properties listed by verified landlords across Nepal</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Stunning rooms, apartments, and co-living spaces with real verified photographs</p>
           </div>
           <Link 
             to="/properties" 
-            className="group inline-flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors mt-2 sm:mt-0"
+            className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#003580] dark:text-blue-400 hover:underline transition-all mt-3 sm:mt-0"
           >
-            Browse All Rentals <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            Explore all listings <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="animate-pulse bg-white rounded-2xl border border-gray-100 overflow-hidden h-[380px] flex flex-col">
-                <div className="bg-gray-100 h-48 w-full"></div>
+              <div key={n} className="animate-pulse bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 overflow-hidden h-[380px] flex flex-col">
+                <div className="bg-gray-100 dark:bg-slate-800 h-48 w-full"></div>
                 <div className="p-5 flex-1 space-y-4">
-                  <div className="bg-gray-100 h-6 rounded w-1/3"></div>
-                  <div className="bg-gray-100 h-4 rounded w-3/4"></div>
-                  <div className="bg-gray-100 h-4 rounded w-1/2"></div>
+                  <div className="bg-gray-100 dark:bg-slate-800 h-6 rounded w-1/3"></div>
+                  <div className="bg-gray-100 dark:bg-slate-800 h-4 rounded w-3/4"></div>
                 </div>
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-150">
-            <p className="text-red-700 font-medium mb-3">{error}</p>
-            <Link to="/properties" className="inline-block bg-emerald-600 hover:bg-emerald-700 font-bold text-white px-5 py-2 rounded-lg text-sm">
-              Direct search page
-            </Link>
-          </div>
-        ) : properties.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 p-12 text-center">
-            <HouseIcon className="mx-auto text-gray-300 mb-4" size={40} />
-            <p className="text-gray-500 font-medium">No verified listings available at the moment.</p>
-            <p className="text-xs text-gray-400 mt-1">Be the first to list a room for rent on MeroKotha!</p>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" id="featured-listings-container">
-            {properties.map((property) => (
-              <article 
-                key={property._id}
-                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-[400px]"
-              >
-                {/* Image panel */}
-                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-                  <img 
-                    src={property.images[0]} 
-                    alt={property.title} 
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                    {property.propertyType}
-                  </div>
-                  <div className="absolute bottom-3 right-3 bg-black/75 text-white text-sm font-bold px-3 py-1 rounded-lg backdrop-blur-xs">
-                    Rs. {Number(property.rent).toLocaleString()}/month
-                  </div>
-                </div>
-
-                {/* Info block */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold mb-2">
-                      <MapPin size={14} className="text-emerald-500 shrink-0" />
-                      <span className="truncate">{property.location}, {property.city}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-listings-container">
+            {displayProperties.map((property) => {
+              const isFav = favorites.includes(property._id);
+              return (
+                <article 
+                  key={property._id}
+                  className="group bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-[420px]"
+                >
+                  {/* Photo Section with Badge & Favorite Trigger */}
+                  <div className="relative h-52 w-full overflow-hidden bg-gray-100 dark:bg-slate-800">
+                    <img 
+                      src={property.images[0]} 
+                      alt={property.title} 
+                      className="h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                    
+                    {/* Badge */}
+                    <div className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                      {property.propertyType}
                     </div>
 
-                    <h3 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
-                      {property.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
-                      {property.description}
-                    </p>
+                    {/* Rent Badge */}
+                    <div className="absolute bottom-3 left-3 bg-black/75 text-white text-xs font-bold px-2.5 py-1 rounded-md backdrop-blur-xs">
+                      Rs. {Number(property.rent).toLocaleString()}/month
+                    </div>
+
+                    {/* Rating Badge */}
+                    {property.rating && (
+                      <div className="absolute top-3 right-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-md">
+                        <Star size={13} className="fill-yellow-400 text-yellow-400" />
+                        <span>{property.rating}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between text-xs">
-                    <span className="font-medium text-gray-500">
-                      Rooms: <strong className="text-gray-800">{property.bedrooms} Bed</strong> / <strong className="text-gray-800">{property.bathrooms} Bath</strong>
-                    </span>
-                    <Link 
-                      to={`/properties/${property._id}`}
-                      className="px-3.5 py-1.5 bg-gray-50 hover:bg-emerald-50 hover:text-emerald-700 text-gray-700 font-bold rounded-lg transition-all border border-gray-100"
-                    >
-                      View Details
-                    </Link>
+                  {/* Property Details Info Section */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {/* Location details */}
+                      <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs font-semibold mb-2">
+                        <MapPin size={14} className="text-[#003580] dark:text-blue-400 shrink-0" />
+                        <span className="truncate">{property.location}, {property.city}</span>
+                      </div>
+
+                      {/* Header Title */}
+                      <h3 className="font-extrabold text-sm text-gray-900 dark:text-white group-hover:text-[#003580] dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                        {property.title}
+                      </h3>
+
+                      {/* Short Description */}
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                        {property.description}
+                      </p>
+
+                      {/* Pill features */}
+                      {property.features && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {property.features.slice(0, 3).map((f) => (
+                            <span key={f} className="text-[10px] font-bold bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons bar */}
+                    <div className="border-t border-gray-100 dark:border-slate-800 pt-4 mt-4 flex items-center justify-between text-xs">
+                      <span className="font-semibold text-gray-500 dark:text-gray-400">
+                        Rooms: <strong className="text-gray-800 dark:text-white">{property.bedrooms} Bed</strong> / <strong className="text-gray-800 dark:text-white">{property.bathrooms} Bath</strong>
+                      </span>
+                      <Link 
+                        to={`/properties/${property._id}`}
+                        className="px-3.5 py-1.5 bg-[#003580] hover:bg-[#00224f] text-white text-[11px] font-black rounded-md transition-all shadow-sm"
+                      >
+                        View Details
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
 
       {/* Nepal City Directory Grid */}
-      <section className="py-16 bg-gray-50 border-y border-gray-100">
+      <section className="py-16 bg-gray-50 dark:bg-slate-950 border-y border-gray-150 dark:border-slate-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Explore Top Locations in Nepal</h2>
-            <p className="text-sm text-gray-500 mt-1">Browse flats, apartments, and shared rooms dynamically by popular zones</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Explore Top Locations in Nepal</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Browse flats, apartments, and shared rooms dynamically by popular zones</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -333,54 +569,54 @@ export default function Home() {
       </section>
 
       {/* Tutorial How it Works Segment */}
-      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">How simple it works</h2>
-          <p className="text-sm text-gray-500 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">How simple it works</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           
           {/* For Tenants */}
-          <div className="bg-emerald-50/50 rounded-2xl p-8 border border-emerald-500/10">
-            <h3 className="text-xl font-bold text-emerald-950 mb-6 flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">1</span>
+          <div className="bg-blue-50/40 dark:bg-slate-800/50 rounded-2xl p-8 border border-blue-500/10">
+            <h3 className="text-xl font-bold text-blue-950 dark:text-blue-300 mb-6 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm">1</span>
               For Rental Seekers (Tenants)
             </h3>
-            <ul className="space-y-4 text-sm text-gray-700">
+            <ul className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <span><strong>Browse Verified Ads:</strong> Browse through flats and rooms sorted by city, price range, and custom list of facilities.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <span><strong>Bookmark Favorites:</strong> Save interesting rental properties so you can cross-compare or inspect them later.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Send Inquiries directly:</strong> Fill in the inquiry form. The landlord receives your phone details immediately to start physical scheduling.</span>
+                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <span><strong>Send Inquiries directly:</strong> Fill in the inquiry form. The landlord receives your details immediately to start physical scheduling.</span>
               </li>
             </ul>
           </div>
 
           {/* For Owners */}
-          <div className="bg-indigo-50/50 rounded-2xl p-8 border border-indigo-500/10">
-            <h3 className="text-xl font-bold text-indigo-950 mb-6 flex items-center gap-2">
+          <div className="bg-indigo-50/40 dark:bg-slate-800/50 rounded-2xl p-8 border border-indigo-500/10">
+            <h3 className="text-xl font-bold text-indigo-950 dark:text-indigo-300 mb-6 flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">2</span>
               For Property Owners & Landlords
             </h3>
-            <ul className="space-y-4 text-sm text-gray-700">
+            <ul className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-                <span><strong>Register Listing:</strong> Submit rooms/flats with detailed facilities lists, photos, rent pricing, and precise google directions location details.</span>
+                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <span><strong>Register Listing:</strong> Submit rooms/flats with detailed facilities lists, photos, rent pricing, and precise directions location details.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
                 <span><strong>Admin Review approval:</strong> MeroKotha admins verify listing data to keep the platform clean and approve it within hours.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 shrink-0 mt-0.5" />
-                <span><strong>Manage tenant inquiries:</strong> Review prospective tenant request letters from your dedicated dashboard and update contact states.</span>
+                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <span><strong>Manage tenant inquiries:</strong> Review prospective tenant request letters from your dedicated dashboard.</span>
               </li>
             </ul>
           </div>
