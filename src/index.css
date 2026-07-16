@@ -6,94 +6,99 @@
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Natural Tones Palette */
-  --color-emerald-50: #fbfaf6;
-  --color-emerald-100: #f0ede6;
-  --color-emerald-200: #ece8e1;
-  --color-emerald-300: #d1d1c5;
-  --color-emerald-400: #b0ae9a;
-  --color-emerald-500: #7d7d6a;
-  --color-emerald-600: #5a5a40; /* Sage Green Primary */
-  --color-emerald-700: #4a4a35; /* Sage Green Hover */
-  --color-emerald-800: #2d2d23;
-  --color-emerald-900: #1c1c15;
-  --color-emerald-950: #12120d;
+  /* Orange Brand Accent Palette */
+  --color-emerald-50: #fff7ed;
+  --color-emerald-100: #ffedd5;
+  --color-emerald-200: #fed7aa;
+  --color-emerald-300: #fdba74;
+  --color-emerald-400: #fb923c;
+  --color-emerald-500: #f97316;
+  --color-emerald-600: #ea580c; /* Basiyo/Airbnb Orange Primary */
+  --color-emerald-700: #c2410c; /* Hover State */
+  --color-emerald-800: #9a3412;
+  --color-emerald-900: #7c2d12;
+  --color-emerald-950: #431407;
 
-  --color-teal-50: #fbfaf6;
-  --color-teal-100: #f0ede6;
-  --color-teal-200: #ece8e1;
-  --color-teal-500: #5a5a40;
-  --color-teal-605: #5a5a40;
-  --color-teal-600: #5a5a40;
-  --color-teal-700: #4a4a35;
-  --color-teal-800: #2d2d23;
+  --color-teal-50: #fff7ed;
+  --color-teal-100: #ffedd5;
+  --color-teal-200: #fed7aa;
+  --color-teal-300: #fdba74;
+  --color-teal-400: #fb923c;
+  --color-teal-500: #f97316;
+  --color-teal-600: #ea580c;
+  --color-teal-700: #c2410c;
+  --color-teal-800: #9a3412;
+  --color-teal-900: #7c2d12;
 
-  --color-gray-50: #fdfbf7;   /* Natural warm bone background */
-  --color-gray-100: #ece8e1;  /* Sand color for borders/dividers */
-  --color-gray-200: #e4e0d7;
-  --color-gray-300: #d1d1c5;
-  --color-gray-400: #b0ae9a;
-  --color-gray-500: #7d7d6a;
-  --color-gray-600: #5a5a40;
-  --color-gray-700: #3d3d3d;  /* Body text color */
-  --color-gray-800: #2d2d23;  /* Main headers & titles */
-  --color-gray-900: #1c1c15;  /* Deep dark elements */
+  /* Redefining Gray palette to pure, modern neutrals for a clean white canvas */
+  --color-gray-50: #ffffff;   /* Pure white canvas */
+  --color-gray-100: #f9fafb;  /* Very soft gray */
+  --color-gray-150: #f3f4f6;  /* Standard soft gray borders */
+  --color-gray-200: #e5e7eb;  /* Specified light border #E5E7EB */
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;  /* Body text color */
+  --color-gray-800: #1f2937;  /* Main headers & titles */
+  --color-gray-900: #111827;  /* Deep dark elements */
 
-  /* Terracotta highlighting accent colors mapped from indigo/red */
-  --color-indigo-50: #fdfbf7;
-  --color-indigo-100: #f9f7f2;
-  --color-indigo-200: #ece8e1;
-  --color-indigo-500: #c05a3e; /* Terracotta Primary */
-  --color-indigo-600: #c05a3e; /* Terracotta Primary Accent */
-  --color-indigo-700: #a34c34; /* Terracotta Hover accent */
-  --color-indigo-800: #883d28;
-  --color-indigo-950: #2d2d23;
+  /* Mappings for indigo to orange/charcoal for absolute color scheme uniformity */
+  --color-indigo-50: #fff7ed;
+  --color-indigo-100: #ffedd5;
+  --color-indigo-200: #fed7aa;
+  --color-indigo-500: #f97316;
+  --color-indigo-600: #ea580c; /* Primary Accent */
+  --color-indigo-700: #c2410c; /* Hover accent */
+  --color-indigo-800: #9a3412;
+  --color-indigo-950: #111827;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #fdfbf7;
-  color: #3d3d3d;
+  background-color: #ffffff;
+  color: #374151;
 }
 
+/* Force Light-Themed Pure White Canvas even in dark class toggles */
 :root.dark body {
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: #ffffff;
+  color: #374151;
 }
 
 :root.dark #merokotha-app {
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: #ffffff;
+  color: #374151;
 }
 
 :root.dark #merokotha-header,
 :root.dark #mobile-navigation-bar,
 :root.dark .bg-white {
-  background-color: rgba(15, 23, 42, 0.96) !important;
+  background-color: #ffffff !important;
 }
 
 :root.dark .bg-gray-50,
 :root.dark .bg-gray-100,
 :root.dark .bg-slate-50 {
-  background-color: #111827 !important;
+  background-color: #ffffff !important;
 }
 
 :root.dark .text-gray-950,
 :root.dark .text-gray-900,
 :root.dark .text-gray-800,
 :root.dark .text-slate-900 {
-  color: #f8fafc !important;
+  color: #111827 !important;
 }
 
 :root.dark .text-gray-700,
 :root.dark .text-gray-600,
 :root.dark .text-slate-700 {
-  color: #cbd5e1 !important;
+  color: #4b5563 !important;
 }
 
 :root.dark .text-gray-500,
 :root.dark .text-gray-400 {
-  color: #94a3b8 !important;
+  color: #6b7280 !important;
 }
 
 :root.dark .border-gray-50,
@@ -101,38 +106,34 @@ body {
 :root.dark .border-gray-150,
 :root.dark .border-gray-200,
 :root.dark .border-slate-200 {
-  border-color: #1e293b !important;
+  border-color: #e5e7eb !important;
 }
 
 :root.dark input,
 :root.dark select,
 :root.dark textarea {
-  background-color: #0b1220 !important;
-  border-color: #334155 !important;
-  color: #f8fafc !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
 }
 
 :root.dark input::placeholder,
 :root.dark textarea::placeholder {
-  color: #64748b !important;
+  color: #9ca3af !important;
 }
 
-:root.dark img {
-  color-scheme: dark;
-}
-
-/* Custom scrollbars in natural sand style */
+/* Custom scrollbars matching the clean minimalist style */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #fdfbf7;
+  background: #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d1c5;
+  background: #e5e7eb;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b0ae9a;
+  background: #d1d5db;
 }

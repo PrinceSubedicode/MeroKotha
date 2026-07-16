@@ -78,11 +78,10 @@ export default function Contact() {
           </div>
 
           {/* Download APK callouts - looks highly professional */}
-          <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-emerald-500/10"></div>
-            <Smartphone size={32} className="text-emerald-400 mb-3" />
-            <h4 className="font-bold text-sm">Download MeroKotha APP</h4>
-            <p className="text-[11px] text-emerald-100/80 leading-relaxed mt-1">
+          <div className="bg-white border border-gray-150 text-gray-800 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+            <Smartphone size={32} className="text-emerald-600 mb-3" />
+            <h4 className="font-bold text-sm text-gray-950">Download MeroKotha APP</h4>
+            <p className="text-[11px] text-gray-500 leading-relaxed mt-1">
               Coming soon on Google Play Store! Stay tuned for real-time mobile push notes on rent matches near you.
             </p>
           </div>

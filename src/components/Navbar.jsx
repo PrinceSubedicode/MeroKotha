@@ -11,9 +11,9 @@ export default function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
   const getDashboardLink = () => {
     if (!user) return '/';
@@ -50,15 +50,6 @@ export default function Navbar() {
 
           {/* User Session Menus */}
           <div className="hidden md:flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setDarkMode((value) => !value)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-emerald-600 transition-colors"
-              title={darkMode ? 'Use light mode' : 'Use dark mode'}
-              aria-label={darkMode ? 'Use light mode' : 'Use dark mode'}
-            >
-              {darkMode ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -132,15 +123,6 @@ export default function Navbar() {
 
           {/* Mobile Right Controls */}
           <div className="flex items-center md:hidden gap-3">
-            <button
-              type="button"
-              onClick={() => setDarkMode((value) => !value)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500"
-              title={darkMode ? 'Use light mode' : 'Use dark mode'}
-              aria-label={darkMode ? 'Use light mode' : 'Use dark mode'}
-            >
-              {darkMode ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
 
             {user && user.role === 'Tenant' && (
               <Link 

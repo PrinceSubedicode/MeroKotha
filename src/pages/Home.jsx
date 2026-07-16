@@ -176,24 +176,21 @@ export default function Home() {
     : demoProperties;
 
   return (
-    <div className="flex-1" id="merokotha-homepage">
+    <div className="flex-1 bg-white" id="merokotha-homepage">
       
-      {/* Premium Booking.com inspired responsive hero - beautifully adaptive to Light and Dark modes */}
-      <section className="bg-gradient-to-br from-[#003580] via-[#00224f] to-[#011631] dark:from-[#0f172a] dark:to-[#020617] pt-10 pb-24 px-4 sm:px-6 lg:px-8 text-white relative border-b border-[#00224f] dark:border-slate-800 transition-colors duration-300">
-        
-        {/* Elegant structural grid overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
+      {/* Premium minimal inspired responsive hero - pure white canvas */}
+      <section className="bg-white pt-12 pb-16 px-4 sm:px-6 lg:px-8 text-gray-800 relative border-b border-gray-100 transition-colors duration-300">
         
         <div className="mx-auto max-w-7xl relative z-10">
           
           {/* Category Pill Navigation - Sleek & Modern */}
-          <div className="flex items-center gap-2.5 mb-10 overflow-x-auto scrollbar-none pb-2">
+          <div className="flex items-center gap-2.5 mb-8 overflow-x-auto scrollbar-none pb-2">
             <button
               onClick={() => handleTabChange('stays', 'any')}
               className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'stays' 
-                  ? 'bg-white/15 border-white text-white shadow-sm' 
-                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-emerald-600'
               }`}
             >
               <Bed size={15} />
@@ -203,8 +200,8 @@ export default function Home() {
               onClick={() => handleTabChange('rooms', 'Room')}
               className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'rooms' 
-                  ? 'bg-white/15 border-white text-white shadow-sm' 
-                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-emerald-600'
               }`}
             >
               <Building size={15} />
@@ -214,8 +211,8 @@ export default function Home() {
               onClick={() => handleTabChange('flats', 'Flat')}
               className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'flats' 
-                  ? 'bg-white/15 border-white text-white shadow-sm' 
-                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-emerald-600'
               }`}
             >
               <HouseIcon size={15} />
@@ -225,8 +222,8 @@ export default function Home() {
               onClick={() => handleTabChange('houses', 'House')}
               className={`flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
                 activeTab === 'houses' 
-                  ? 'bg-white/15 border-white text-white shadow-sm' 
-                  : 'border-transparent text-white/80 hover:bg-white/10 hover:text-white'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm' 
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-emerald-600'
               }`}
             >
               <Compass size={15} />
@@ -234,7 +231,7 @@ export default function Home() {
             </button>
             <Link
               to="/contact"
-              className="flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold text-white/80 hover:bg-white/10 hover:text-white border border-transparent transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-4.5 py-2 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-50 hover:text-emerald-600 border border-gray-200 transition-all whitespace-nowrap"
             >
               <Sparkles size={15} />
               <span>Exclusive Deals</span>
@@ -243,77 +240,77 @@ export default function Home() {
 
           {/* Simple Clean Title Header */}
           <div className="max-w-3xl mb-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-3 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-3 leading-tight">
               Where to next, {user ? user.name.split(' ')[0] : 'traveler'}?
             </h1>
-            <p className="text-sm sm:text-base text-white/80 font-medium">
+            <p className="text-sm sm:text-base text-gray-500 font-medium">
               Find budget-friendly rooms, flats, and homes with zero broker commissions in Nepal.
             </p>
           </div>
 
-          {/* Golden Highlight Border Framed Search Box - Clean, responsive, and elegant */}
-          <div className="bg-[#febb02] p-1 rounded-xl shadow-xl max-w-6xl">
-            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 lg:grid-cols-12 bg-white dark:bg-slate-900 rounded-lg p-1.5 gap-1 items-stretch text-gray-800 dark:text-gray-100 transition-colors duration-300">
+          {/* Clean modern border search box - rounded-2xl and elegant */}
+          <div className="bg-white border border-gray-200 p-1.5 rounded-2xl shadow-md max-w-6xl">
+            <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 lg:grid-cols-12 bg-white rounded-xl gap-1 items-stretch text-gray-800 transition-colors duration-300">
               
               {/* Where input field */}
-              <div className="lg:col-span-5 flex items-center gap-2 px-3 py-2 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-slate-850 min-w-0">
-                <MapPin className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
+              <div className="lg:col-span-5 flex items-center gap-2.5 px-4 py-2 border-b lg:border-b-0 lg:border-r border-gray-100 min-w-0">
+                <MapPin className="text-emerald-600 shrink-0" size={18} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Where in Nepal?</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Where in Nepal?</p>
                   <input 
                     type="text" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Enter area, neighborhood, or city (e.g. Jhamsikhel)"
-                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-none outline-none focus:outline-none focus:ring-0 p-0"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 border-none outline-none focus:outline-none focus:ring-0 p-0"
                     id="search-input"
                   />
                 </div>
               </div>
 
               {/* Property Type drop menu */}
-              <div className="lg:col-span-3 flex items-center gap-2 px-3 py-2 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-slate-850">
-                <Building className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
+              <div className="lg:col-span-3 flex items-center gap-2.5 px-4 py-2 border-b lg:border-b-0 lg:border-r border-gray-100">
+                <Building className="text-emerald-600 shrink-0" size={18} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Property Type</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Property Type</p>
                   <select 
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
                     id="type-select"
                   >
-                    <option value="any" className="dark:bg-slate-900 text-gray-800 dark:text-white">Any (Rooms & Flats)</option>
-                    <option value="Room" className="dark:bg-slate-900 text-gray-800 dark:text-white">Single Room</option>
-                    <option value="Flat" className="dark:bg-slate-900 text-gray-800 dark:text-white">Entire Flat</option>
-                    <option value="House" className="dark:bg-slate-900 text-gray-800 dark:text-white">Complete House</option>
+                    <option value="any">Any (Rooms & Flats)</option>
+                    <option value="Room">Single Room</option>
+                    <option value="Flat">Entire Flat</option>
+                    <option value="House">Complete House</option>
                   </select>
                 </div>
               </div>
 
               {/* City Selection dropdown */}
-              <div className="lg:col-span-2 flex items-center gap-2 px-3 py-2">
-                <Compass className="text-gray-400 dark:text-gray-500 shrink-0" size={18} />
+              <div className="lg:col-span-2 flex items-center gap-2.5 px-4 py-2 border-b lg:border-b-0 lg:border-r border-gray-100">
+                <Compass className="text-emerald-600 shrink-0" size={18} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Select City</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Select City</p>
                   <select 
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 dark:text-white border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                    className="w-full bg-transparent text-xs sm:text-sm font-semibold text-gray-800 border-none outline-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
                     id="city-select"
                   >
-                    <option value="any" className="dark:bg-slate-900 text-gray-800 dark:text-white">All Cities</option>
+                    <option value="any">All Cities</option>
                     {allCities.map((city) => (
-                      <option key={city} value={city} className="dark:bg-slate-900 text-gray-800 dark:text-white">{city}</option>
+                      <option key={city} value={city}>{city}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Booking Submit search button */}
-              <div className="lg:col-span-2 flex">
+              {/* Submit search button */}
+              <div className="lg:col-span-2 flex p-1">
                 <button 
                   type="submit"
-                  className="flex-1 bg-[#003580] dark:bg-blue-600 hover:bg-[#00224f] dark:hover:bg-blue-700 text-white font-bold rounded-md px-5 py-3.5 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm shadow-md"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-5 py-3 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm shadow-sm"
                   id="search-submit-btn"
                 >
                   <Search size={16} />
@@ -328,52 +325,52 @@ export default function Home() {
       </section>
 
       {/* Trust & Verification badging segment */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative -mt-8 z-20">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-150 dark:border-slate-800/80 py-8 px-6 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-8 transition-colors duration-300">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative -mt-6 z-20">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-150 py-8 px-6 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-8 transition-colors duration-300">
           <div className="flex gap-4 items-start">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0 font-bold transition-all">
               <CheckCircle size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Direct Verification</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Every room and price is verified physically or directly with the verified landlords.</p>
+              <h3 className="text-sm font-bold text-gray-800 mb-1">Direct Verification</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Every room and price is verified physically or directly with the verified landlords.</p>
             </div>
           </div>
 
           <div className="flex gap-4 items-start">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0 font-bold transition-all">
               <Shield size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Zero Middleman Fees</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Connect, chat, and rent directly. Absolutely zero commission cuts or broker charges.</p>
+              <h3 className="text-sm font-bold text-gray-800 mb-1">Zero Middleman Fees</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Connect, chat, and rent directly. Absolutely zero commission cuts or broker charges.</p>
             </div>
           </div>
 
           <div className="flex gap-4 items-start">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#003580] dark:text-blue-400 shrink-0 font-bold transition-all">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0 font-bold transition-all">
               <Key size={22} />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-1">Instant Direct Inquiries</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Send an inquiry instantly with your contact details to start immediate room viewings.</p>
+              <h3 className="text-sm font-bold text-gray-800 mb-1">Instant Direct Inquiries</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Send an inquiry instantly with your contact details to start immediate room viewings.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Featured Properties Showcase */}
-      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight animate-fade-in">
               Trending Properties in Nepal
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Stunning rooms, apartments, and co-living spaces with real verified photographs</p>
+            <p className="text-sm text-gray-500 mt-1">Stunning rooms, apartments, and co-living spaces with real verified photographs</p>
           </div>
           <Link 
             to="/properties" 
-            className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#003580] dark:text-blue-400 hover:underline transition-all mt-3 sm:mt-0"
+            className="group inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition-all mt-3 sm:mt-0"
           >
             Explore all listings <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -382,11 +379,11 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="animate-pulse bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 overflow-hidden h-[380px] flex flex-col">
-                <div className="bg-gray-100 dark:bg-slate-800 h-48 w-full"></div>
+              <div key={n} className="animate-pulse bg-white rounded-2xl border border-gray-100 overflow-hidden h-[380px] flex flex-col">
+                <div className="bg-gray-50 h-48 w-full"></div>
                 <div className="p-5 flex-1 space-y-4">
-                  <div className="bg-gray-100 dark:bg-slate-800 h-6 rounded w-1/3"></div>
-                  <div className="bg-gray-100 dark:bg-slate-800 h-4 rounded w-3/4"></div>
+                  <div className="bg-gray-50 h-6 rounded w-1/3"></div>
+                  <div className="bg-gray-50 h-4 rounded w-3/4"></div>
                 </div>
               </div>
             ))}
@@ -397,10 +394,10 @@ export default function Home() {
               return (
                 <article 
                   key={property._id}
-                  className="group bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800/80 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col h-[410px]"
+                  className="group bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col h-[410px]"
                 >
                   {/* Photo Section with Badge & Favorite Trigger */}
-                  <div className="relative h-48 w-full overflow-hidden bg-gray-100 dark:bg-slate-800">
+                  <div className="relative h-48 w-full overflow-hidden bg-gray-50">
                     <img 
                       src={property.images[0]} 
                       alt={property.title} 
@@ -410,7 +407,7 @@ export default function Home() {
                     />
                     
                     {/* Badge */}
-                    <div className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                    <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">
                       {property.propertyType}
                     </div>
 
@@ -421,7 +418,7 @@ export default function Home() {
 
                     {/* Rating Badge */}
                     {property.rating && (
-                      <div className="absolute top-3 right-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-md">
+                      <div className="absolute top-3 right-3 bg-white text-gray-800 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 shadow-xs border border-gray-100">
                         <Star size={13} className="fill-yellow-400 text-yellow-400" />
                         <span>{property.rating}</span>
                       </div>
@@ -432,18 +429,18 @@ export default function Home() {
                   <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
                       {/* Location details */}
-                      <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs font-semibold mb-2">
-                        <MapPin size={13} className="text-[#003580] dark:text-blue-400 shrink-0" />
+                      <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold mb-2">
+                        <MapPin size={13} className="text-emerald-600 shrink-0" />
                         <span className="truncate">{property.location}, {property.city}</span>
                       </div>
 
                       {/* Header Title */}
-                      <h3 className="font-extrabold text-sm text-gray-900 dark:text-white group-hover:text-[#003580] dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="font-bold text-sm text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
                         {property.title}
                       </h3>
 
                       {/* Short Description */}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
                         {property.description}
                       </p>
 
@@ -451,7 +448,7 @@ export default function Home() {
                       {property.features && (
                         <div className="flex flex-wrap gap-1 mt-3">
                           {property.features.slice(0, 3).map((f) => (
-                            <span key={f} className="text-[10px] font-bold bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
+                            <span key={f} className="text-[10px] font-bold bg-gray-50 text-gray-600 px-2 py-0.5 rounded border border-gray-100">
                               {f}
                             </span>
                           ))}
@@ -460,13 +457,13 @@ export default function Home() {
                     </div>
 
                     {/* Action buttons bar */}
-                    <div className="border-t border-gray-100 dark:border-slate-800/80 pt-4 mt-4 flex items-center justify-between text-xs">
-                      <span className="font-semibold text-gray-500 dark:text-gray-400">
-                        Rooms: <strong className="text-gray-800 dark:text-white">{property.bedrooms} Bed</strong> / <strong className="text-gray-800 dark:text-white">{property.bathrooms} Bath</strong>
+                    <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between text-xs">
+                      <span className="font-semibold text-gray-500">
+                        Rooms: <strong className="text-gray-800">{property.bedrooms} Bed</strong> / <strong className="text-gray-800">{property.bathrooms} Bath</strong>
                       </span>
                       <Link 
                         to={`/properties/${property._id}`}
-                        className="px-3.5 py-1.5 bg-[#003580] dark:bg-blue-600 hover:bg-[#00224f] dark:hover:bg-blue-700 text-white text-[11px] font-black rounded-md transition-all shadow-sm"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black rounded-xl transition-all shadow-sm"
                       >
                         View Details
                       </Link>
@@ -480,11 +477,11 @@ export default function Home() {
       </section>
 
       {/* Nepal City Directory Grid */}
-      <section className="py-16 bg-gray-50 dark:bg-slate-950 border-y border-gray-150 dark:border-slate-800 transition-colors duration-300">
+      <section className="py-16 bg-white border-y border-gray-100 transition-colors duration-300">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Explore Top Locations in Nepal</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Browse flats, apartments, and shared rooms dynamically by popular zones</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Explore Top Locations in Nepal</h2>
+            <p className="text-sm text-gray-500 mt-1">Browse flats, apartments, and shared rooms dynamically by popular zones</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -492,7 +489,7 @@ export default function Home() {
             {/* Kathmandu */}
             <div 
               onClick={() => navigate('/properties?search=Kathmandu')}
-              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
+              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
                 src="https://images.unsplash.com/photo-1541417904950-b855846fe074?auto=format&fit=crop&q=80&w=600" 
@@ -510,7 +507,7 @@ export default function Home() {
             {/* Lalitpur */}
             <div 
               onClick={() => navigate('/properties?search=Lalitpur')}
-              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
+              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
                 src="https://images.unsplash.com/photo-1606293926075-69a00dbfde81?auto=format&fit=crop&q=80&w=600" 
@@ -528,7 +525,7 @@ export default function Home() {
             {/* Pokhara */}
             <div 
               onClick={() => navigate('/properties?search=Pokhara')}
-              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
+              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
                 src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=600" 
@@ -546,7 +543,7 @@ export default function Home() {
             {/* Chitwan */}
             <div 
               onClick={() => navigate('/properties?search=Chitwan')}
-              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all"
+              className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
                 src="https://images.unsplash.com/photo-1581888227599-779811939961?auto=format&fit=crop&q=80&w=600" 
@@ -566,53 +563,53 @@ export default function Home() {
       </section>
 
       {/* Tutorial How it Works Segment */}
-      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-900 transition-colors duration-300">
+      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white transition-colors duration-300">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">How simple it works</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">How simple it works</h2>
+          <p className="text-sm text-gray-500 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           
           {/* For Tenants */}
-          <div className="bg-blue-50/20 dark:bg-slate-800/50 rounded-2xl p-8 border border-blue-500/10">
-            <h3 className="text-xl font-bold text-blue-950 dark:text-blue-300 mb-6 flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm">1</span>
+          <div className="bg-white rounded-2xl p-8 border border-gray-150 shadow-xs hover:shadow-sm transition-all">
+            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">1</span>
               For Rental Seekers (Tenants)
             </h3>
-            <ul className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
+            <ul className="space-y-4 text-sm text-gray-600">
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Browse Verified Ads:</strong> Browse through flats and rooms sorted by city, price range, and custom list of facilities.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Bookmark Favorites:</strong> Save interesting rental properties so you can cross-compare or inspect them later.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Send Inquiries directly:</strong> Fill in the inquiry form. The landlord receives your details immediately to start physical scheduling.</span>
               </li>
             </ul>
           </div>
 
           {/* For Owners */}
-          <div className="bg-indigo-50/20 dark:bg-slate-800/50 rounded-2xl p-8 border border-indigo-500/10">
-            <h3 className="text-xl font-bold text-indigo-950 dark:text-indigo-300 mb-6 flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">2</span>
+          <div className="bg-white rounded-2xl p-8 border border-gray-150 shadow-xs hover:shadow-sm transition-all">
+            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">2</span>
               For Property Owners & Landlords
             </h3>
-            <ul className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
+            <ul className="space-y-4 text-sm text-gray-600">
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Register Listing:</strong> Submit rooms/flats with detailed facilities lists, photos, rent pricing, and precise directions location details.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Admin Review approval:</strong> MeroKotha admins verify listing data to keep the platform clean and approve it within hours.</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                 <span><strong>Manage tenant inquiries:</strong> Review prospective tenant request letters from your dedicated dashboard.</span>
               </li>
             </ul>
