@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { User, Mail, Phone, Lock, ClipboardList, PlusCircle, AlertCircle } from 'lucide-react';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -16,6 +16,16 @@ export default function Register() {
   const [role, setRole] = useState('Tenant'); // Defaults to Tenant
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'Admin') {
+        navigate('/admin-dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,12 +62,8 @@ export default function Register() {
         title: 'Account created',
         message: 'Your unified account is ready! Switch roles anytime in the top navigation bar.'
       });
-      // Redirect based on selected user role
-      if (role === 'Property Owner') {
-        navigate('/owner-dashboard');
-      } else {
-        navigate('/tenant-dashboard');
-      }
+      // Redirect to home page
+      navigate('/', { replace: true });
     } else {
       setError(res.error);
       showToast({

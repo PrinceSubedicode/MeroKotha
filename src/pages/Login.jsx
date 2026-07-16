@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,11 +18,15 @@ export default function Login() {
   // Return url or role dashboards
   const from = location.state?.from?.pathname || null;
 
-  const getDashboardRedirect = (role) => {
-    if (role === 'Admin') return '/admin-dashboard';
-    if (role === 'Property Owner') return '/owner-dashboard';
-    return '/tenant-dashboard';
-  };
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'Admin') {
+        navigate('/admin-dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,11 +37,25 @@ export default function Login() {
     if (result.success) {
       // Fetch user from storage or state after context login completes
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      const redirectPath = from || getDashboardRedirect(storedUser.role);
+      let redirectPath = '/';
+      if (storedUser.role === 'Admin') {
+        redirectPath = '/admin-dashboard';
+      } else {
+        redirectPath = '/';
+      }
+
+      if (from && from !== '/login' && from !== '/register') {
+        if (from === '/admin-dashboard' && storedUser.role !== 'Admin') {
+          redirectPath = '/';
+        } else {
+          redirectPath = from;
+        }
+      }
+
       showToast({
         type: 'success',
         title: 'Welcome back',
-        message: `Signed in as ${storedUser.role}.`
+        message: `Signed in successfully!`
       });
       navigate(redirectPath, { replace: true });
     } else {
