@@ -305,12 +305,12 @@ export default function Properties() {
               <select 
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                disabled={!province}
+                disabled={!province || !district}
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs font-semibold focus:border-emerald-500 focus:bg-white focus:outline-none disabled:opacity-50"
                 id="filter-city-select"
               >
                 <option value="">Select Municipality/City</option>
-                {province && NEPAL_GEOGRAPHY[province].cities.map(ct => (
+                {province && district && NEPAL_GEOGRAPHY[province].municipalities?.[district]?.map(ct => (
                   <option key={ct} value={ct}>{ct}</option>
                 ))}
               </select>

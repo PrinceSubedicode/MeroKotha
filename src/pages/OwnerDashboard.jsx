@@ -157,6 +157,16 @@ export default function OwnerDashboard() {
     setFormSuccess(null);
     setFormError(null);
 
+    // Validate that the selected municipality belongs to the selected district before saving
+    if (formProvince && formDistrict && formCity) {
+      const allowedCities = NEPAL_GEOGRAPHY[formProvince]?.municipalities?.[formDistrict] || [];
+      if (!allowedCities.includes(formCity)) {
+        setFormError(`Selected municipality "${formCity}" does not belong to district "${formDistrict}".`);
+        setSubmittingForm(false);
+        return;
+      }
+    }
+
     // Form payload construction
     const payload = {
       title: formTitle,
@@ -537,7 +547,7 @@ export default function OwnerDashboard() {
                     id="form-city-select"
                   >
                     <option value="">Select City</option>
-                    {formProvince && NEPAL_GEOGRAPHY[formProvince].cities.map(ct => (
+                    {formProvince && formDistrict && NEPAL_GEOGRAPHY[formProvince].municipalities?.[formDistrict]?.map(ct => (
                       <option key={ct} value={ct}>{ct}</option>
                     ))}
                   </select>

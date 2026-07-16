@@ -168,7 +168,7 @@ export default function Home() {
   };
 
   // Compile unique cities for the hero dropdown or filter
-  const allCities = Object.values(NEPAL_GEOGRAPHY).flatMap(prov => prov.cities);
+  const allCities = Array.from(new Set(Object.values(NEPAL_GEOGRAPHY).flatMap(prov => prov.cities)));
 
   // Merge real properties from backend with beautiful demo rooms
   const displayProperties = properties.length > 0 
