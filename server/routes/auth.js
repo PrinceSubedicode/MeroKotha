@@ -56,6 +56,7 @@ router.post('/register', async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
+        roles: newUser.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: newUser.phone,
         isVerified: newUser.isVerified
       }
@@ -102,6 +103,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        roles: user.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: user.phone,
         isVerified: user.isVerified
       }
@@ -110,6 +112,54 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error during login.' });
+  }
+});
+
+// Switch Role
+router.post('/switch-role', authenticateToken, async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['Tenant', 'Property Owner'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role for switching.' });
+    }
+
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (user.role === 'Admin') {
+      return res.status(403).json({ message: 'Admin role cannot be switched.' });
+    }
+
+    // Update active role in database
+    await usersColl.findByIdAndUpdate(req.user._id, { role });
+
+    // Generate a new token with updated role
+    const token = jwt.sign(
+      { _id: user._id, email: user.email, role: role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: `Switched to ${role} Mode successfully!`,
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: role,
+        roles: ['Tenant', 'Property Owner'],
+        phone: user.phone,
+        isVerified: user.isVerified
+      }
+    });
+
+  } catch (error) {
+    console.error('Role switching error:', error);
+    res.status(500).json({ message: 'Internal server error during role switch.' });
   }
 });
 
@@ -127,6 +177,7 @@ router.get('/me', authenticateToken, async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      roles: user.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
       phone: user.phone,
       isVerified: user.isVerified,
       createdAt: user.createdAt
@@ -164,6 +215,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        roles: updatedUser.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: updatedUser.phone,
         isVerified: updatedUser.isVerified
       }

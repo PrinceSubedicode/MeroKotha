@@ -50,9 +50,7 @@ export default function Register() {
       showToast({
         type: 'success',
         title: 'Account created',
-        message: role === 'Property Owner'
-          ? 'Your owner dashboard is ready for listings.'
-          : 'Your tenant dashboard is ready.'
+        message: 'Your unified account is ready! Switch roles anytime in the top navigation bar.'
       });
       // Redirect based on selected user role
       if (role === 'Property Owner') {
@@ -90,8 +88,8 @@ export default function Register() {
           
           {/* Select User Role */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 text-center">
-              Choose your Account Profile
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 text-center animate-pulse">
+              Choose your starting mode (you can switch anytime)
             </label>
             <div className="grid grid-cols-2 gap-3 mb-4" id="role-selector-container">
               

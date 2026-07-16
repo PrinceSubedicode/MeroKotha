@@ -1,14 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import MeroKothaLogo from './MeroKothaLogo.jsx';
-import { Menu, X, User, LogOut, PlusCircle, Bookmark, ClipboardList, Shield, Moon, Sun } from 'lucide-react';
+import { Menu, X, User, LogOut, PlusCircle, Bookmark, ClipboardList, Shield, Moon, Sun, ArrowLeftRight } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout, favorites } = useAuth();
+  const { user, logout, favorites, switchRole } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const location = useLocation();
+
+  const handleRoleSwitch = async () => {
+    const targetRole = user.role === 'Tenant' ? 'Property Owner' : 'Tenant';
+    const res = await switchRole(targetRole);
+    if (res.success) {
+      showToast({
+        type: 'success',
+        title: 'Role Switched',
+        message: `Switched to ${targetRole} mode.`
+      });
+      const nextDashboard = targetRole === 'Property Owner' ? '/owner-dashboard' : '/tenant-dashboard';
+      navigate(nextDashboard);
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Failed to switch role',
+        message: res.error
+      });
+    }
+  };
 
   useEffect(() => {
     document.documentElement.classList.remove('dark');
@@ -83,6 +106,18 @@ export default function Navbar() {
                   )}
                   {user.role} Dashboard
                 </Link>
+
+                {/* Role Switcher Button */}
+                {user.role !== 'Admin' && (
+                  <button
+                    onClick={handleRoleSwitch}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all cursor-pointer shadow-sm"
+                    id="switch-role-desktop-btn"
+                  >
+                    <ArrowLeftRight size={13} className="text-emerald-600" />
+                    Switch to {user.role === 'Tenant' ? 'Owner' : 'Tenant'} Mode
+                  </button>
+                )}
 
                 <div className="flex items-center gap-2 ml-1">
                   <Link to="/profile" className="flex items-center gap-2 group">
@@ -189,6 +224,19 @@ export default function Navbar() {
                 >
                   Go to {user.role} Dashboard
                 </Link>
+
+                {user.role !== 'Admin' && (
+                  <button 
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleRoleSwitch();
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg bg-emerald-50/50 border border-emerald-150 px-3 py-2 text-sm font-bold text-emerald-700 text-left cursor-pointer"
+                    id="switch-role-mobile-btn"
+                  >
+                    <ArrowLeftRight size={16} className="text-emerald-600" /> Switch to {user.role === 'Tenant' ? 'Owner' : 'Tenant'} Mode
+                  </button>
+                )}
 
                 <Link 
                   to="/profile"

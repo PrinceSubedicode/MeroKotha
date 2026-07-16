@@ -141,6 +141,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Auth: Switch Role (between Tenant and Owner)
+  const switchRole = async (targetRole) => {
+    try {
+      const res = await api.post('/auth/switch-role', { role: targetRole });
+      const { token: newToken, user: updatedUser } = res.data;
+
+      localStorage.setItem('token', newToken);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      setToken(newToken);
+      setUser(updatedUser);
+      return { success: true, message: res.data.message };
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to switch role.';
+      return { success: false, error: errorMsg };
+    }
+  };
+
   // Tenant Favorite toggling
   const toggleFavorite = async (propertyId) => {
     if (!user) return false;
@@ -186,6 +204,7 @@ export function AuthProvider({ children }) {
       register,
       logout,
       updateProfile,
+      switchRole,
       toggleFavorite,
       isFavorite
     }}>
