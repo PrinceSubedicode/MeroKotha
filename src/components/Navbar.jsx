@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import { useTheme } from '../context/ThemeContext.jsx';
 import MeroKothaLogo from './MeroKothaLogo.jsx';
 import { Menu, X, User, LogOut, PlusCircle, Bookmark, ClipboardList, Shield, Moon, Sun, ArrowLeftRight } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout, favorites, switchRole } = useAuth();
   const { showToast } = useToast();
+  const { theme, toggleTheme, isDark } = useTheme();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const location = useLocation();
 
   const handleRoleSwitch = async () => {
@@ -33,11 +34,6 @@ export default function Navbar() {
     }
   };
 
-  useEffect(() => {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
-  }, []);
-
   const getDashboardLink = () => {
     if (!user) return '/';
     if (user.role === 'Admin') return '/admin-dashboard';
@@ -50,7 +46,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-md" id="merokotha-header">
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-md transition-colors duration-250" id="merokotha-header">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           
@@ -73,6 +69,15 @@ export default function Navbar() {
 
           {/* User Session Menus */}
           <div className="hidden md:flex items-center gap-4">
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-orange-500 hover:border-orange-500 transition-all cursor-pointer shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:text-orange-400"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -167,6 +172,15 @@ export default function Navbar() {
 
           {/* Mobile Right Controls */}
           <div className="flex items-center md:hidden gap-3">
+
+            {/* Mobile Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-orange-500 transition-colors cursor-pointer dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
             {user && user.role === 'Tenant' && (
               <Link 

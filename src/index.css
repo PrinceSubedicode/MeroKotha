@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-@theme {
+:root {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
@@ -58,68 +58,203 @@ body {
   font-family: var(--font-sans);
   background-color: #ffffff;
   color: #374151;
+  transition: background-color 250ms ease-in-out, color 250ms ease-in-out;
 }
 
-/* Force Light-Themed Pure White Canvas even in dark class toggles */
+/* Smooth global transitions for theme changes on key element types */
+body,
+#merokotha-app,
+#merokotha-header,
+#mobile-navigation-bar,
+header,
+footer,
+main,
+aside,
+article,
+section,
+nav,
+button,
+a,
+input,
+select,
+textarea,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  transition-property: background-color, border-color, color, text-decoration-color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 250ms;
+}
+
+/* 🌙 Dark Mode Theme Custom Styles */
 :root.dark body {
-  background-color: #ffffff;
-  color: #374151;
+  background-color: #0F172A !important;
+  color: #CBD5E1 !important;
 }
 
 :root.dark #merokotha-app {
-  background-color: #ffffff;
-  color: #374151;
+  background-color: #0F172A !important;
+  color: #CBD5E1 !important;
 }
 
-:root.dark #merokotha-header,
-:root.dark #mobile-navigation-bar,
+:root.dark #merokotha-header {
+  background-color: rgba(17, 24, 39, 0.9) !important;
+  border-color: #334155 !important;
+}
+
+:root.dark #mobile-navigation-bar {
+  background-color: #111827 !important;
+  border-color: #334155 !important;
+}
+
 :root.dark .bg-white {
-  background-color: #ffffff !important;
+  background-color: #1E293B !important;
 }
 
 :root.dark .bg-gray-50,
 :root.dark .bg-gray-100,
-:root.dark .bg-slate-50 {
-  background-color: #ffffff !important;
+:root.dark .bg-slate-50,
+:root.dark .bg-slate-100,
+:root.dark .bg-gray-150 {
+  background-color: #111827 !important;
 }
 
+/* Specific button styles that should remain dark/light but get subtle borders */
+:root.dark button.bg-gray-50,
+:root.dark button.bg-white,
+:root.dark a.bg-white {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+/* Brand colors must be preserved, but adjust standard texts */
 :root.dark .text-gray-950,
 :root.dark .text-gray-900,
 :root.dark .text-gray-800,
-:root.dark .text-slate-900 {
-  color: #111827 !important;
+:root.dark .text-slate-900,
+:root.dark .text-gray-850,
+:root.dark .text-slate-800 {
+  color: #F8FAFC !important;
 }
 
 :root.dark .text-gray-700,
 :root.dark .text-gray-600,
-:root.dark .text-slate-700 {
-  color: #4b5563 !important;
+:root.dark .text-slate-700,
+:root.dark .text-gray-650 {
+  color: #CBD5E1 !important;
 }
 
 :root.dark .text-gray-500,
-:root.dark .text-gray-400 {
-  color: #6b7280 !important;
+:root.dark .text-gray-400,
+:root.dark .text-slate-500,
+:root.dark .text-slate-400 {
+  color: #94A3B8 !important;
 }
 
+/* Borders mapping */
 :root.dark .border-gray-50,
 :root.dark .border-gray-100,
 :root.dark .border-gray-150,
 :root.dark .border-gray-200,
-:root.dark .border-slate-200 {
-  border-color: #e5e7eb !important;
+:root.dark .border-slate-200,
+:root.dark .border-slate-100,
+:root.dark .border-gray-250 {
+  border-color: #334155 !important;
 }
 
+/* Form element styling */
 :root.dark input,
 :root.dark select,
 :root.dark textarea {
-  background-color: #ffffff !important;
-  border-color: #e5e7eb !important;
-  color: #111827 !important;
+  background-color: #111827 !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
 }
 
 :root.dark input::placeholder,
 :root.dark textarea::placeholder {
-  color: #9ca3af !important;
+  color: #64748B !important;
+}
+
+:root.dark input:focus,
+:root.dark select:focus,
+:root.dark textarea:focus {
+  border-color: #F97316 !important;
+  outline: none;
+}
+
+/* Soft semantic status badges for Dark Mode */
+:root.dark .bg-emerald-50,
+:root.dark .bg-emerald-100\/70 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+:root.dark .text-emerald-800,
+:root.dark .text-emerald-700,
+:root.dark .text-emerald-600 {
+  color: #34D399 !important;
+}
+
+:root.dark .bg-indigo-50,
+:root.dark .bg-indigo-50\/40,
+:root.dark .bg-indigo-100\/70 {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+:root.dark .text-indigo-800,
+:root.dark .text-indigo-700,
+:root.dark .text-indigo-650 {
+  color: #818CF8 !important;
+}
+
+:root.dark .bg-red-50,
+:root.dark .bg-red-100\/70 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+:root.dark .text-red-800,
+:root.dark .text-red-700 {
+  color: #F87171 !important;
+}
+
+:root.dark .bg-amber-50,
+:root.dark .bg-amber-100\/70 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+:root.dark .text-amber-800,
+:root.dark .text-amber-700 {
+  color: #FBBF24 !important;
+}
+
+/* Tables and Alternating rows */
+:root.dark th {
+  background-color: #111827 !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+:root.dark tr:nth-child(even) td {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Redefine shadow depth for dark background contrast */
+:root.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
+}
+:root.dark .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5) !important;
+}
+:root.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5) !important;
+}
+:root.dark .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Custom scrollbars matching the clean minimalist style */
@@ -136,4 +271,14 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #d1d5db;
+}
+
+:root.dark ::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+:root.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+:root.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
