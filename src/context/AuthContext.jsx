@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
           setUser(res.data);
           localStorage.setItem('user', JSON.stringify(res.data));
         } catch (error) {
-          console.error('Session validation failing:', error);
+          console.warn('Session invalid or expired, logging out:', error.message);
           // Token expired or invalid
           logout();
         }
