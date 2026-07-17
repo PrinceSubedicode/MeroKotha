@@ -18,6 +18,11 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
+  // Identity document review states
+  const [reviewUser, setReviewUser] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   // Load administrative dataset
   const loadAdminDataset = async () => {
     setLoading(true);
@@ -38,6 +43,28 @@ export default function AdminDashboard() {
       setError('Failed to sync administrative platform datasets. Confirm system privileges.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerificationReview = async (userId, status) => {
+    if (status === 'Rejected' && !rejectionReason.trim()) {
+      alert('Please provide a rejection feedback note before rejecting credentials.');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await api.put(`/admin/users/${userId}/verification-review`, {
+        status,
+        rejectionReason: status === 'Rejected' ? rejectionReason : undefined
+      });
+      setReviewUser(null);
+      setRejectionReason('');
+      loadAdminDataset();
+    } catch (err) {
+      console.error('Verification review failed:', err);
+      alert(err.response?.data?.message || 'Verification review process failed.');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -296,7 +323,8 @@ export default function AdminDashboard() {
                       <th className="py-3 px-4">Email</th>
                       <th className="py-3 px-4">Phone</th>
                       <th className="py-3 px-4">Designated Role</th>
-                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-center">Verification Status</th>
+                      <th className="py-3 px-4 text-right">Review Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 font-medium text-gray-700">
@@ -309,26 +337,31 @@ export default function AdminDashboard() {
                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
                             item.role === 'Admin' ? 'bg-slate-900 text-white' :
                             item.role === 'Property Owner' ? 'bg-emerald-50 text-emerald-800' :
-                            'bg-indigo-50 text-indigo-805 text-indigo-700'
+                            'bg-indigo-50 text-indigo-700'
                           }`}>
                             {item.role}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-center">
-                          {item.role === 'Property Owner' ? (
-                            <button
-                              onClick={() => handleToggleUserVerification(item._id)}
-                              className={`rounded-lg py-1 px-2.5 text-[10px] font-bold transition-all shadow-2xs border ${
-                                item.isVerified 
-                                  ? 'bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-100' 
-                                  : 'bg-amber-50 border-amber-100 text-amber-700 hover:bg-amber-100'
-                              }`}
-                            >
-                              {item.isVerified ? '✓ Verified Owner' : 'Verify Owner'}
-                            </button>
-                          ) : (
-                            <span className="text-gray-400 text-[10px]">Autopass</span>
-                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-block ${
+                            item.verificationStatus === 'Verified' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                            item.verificationStatus === 'Under Review' ? 'bg-blue-50 border-blue-100 text-blue-700 animate-pulse' :
+                            item.verificationStatus === 'Rejected' ? 'bg-red-50 border-red-100 text-red-700' :
+                            'bg-gray-50 border-gray-150 text-gray-500'
+                          }`}>
+                            {item.verificationStatus || 'Not Submitted'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            onClick={() => {
+                              setReviewUser(item);
+                              setRejectionReason('');
+                            }}
+                            className="text-[10px] font-extrabold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100/60 px-2.5 py-1.5 rounded-lg border border-emerald-100"
+                          >
+                            Review Details
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -372,6 +405,201 @@ export default function AdminDashboard() {
                 Permanently Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Identity Verification Document Review Modal Overlay */}
+      {reviewUser && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 transition-all duration-200">
+          <div className="bg-white rounded-3xl border border-gray-100 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl space-y-5">
+            
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Document Verification Desk</h3>
+                <p className="text-[11px] text-gray-400 mt-0.5">Inspect user credentials and make a review decision</p>
+              </div>
+              <button 
+                onClick={() => setReviewUser(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 bg-gray-50 rounded-lg hover:bg-gray-100"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Applicant Information</span>
+                <p className="font-extrabold text-sm text-gray-900">{reviewUser.name}</p>
+                <p className="text-gray-500 font-semibold">{reviewUser.email}</p>
+                <p className="text-gray-500 font-semibold">{reviewUser.phone}</p>
+                <p className="mt-1">
+                  Role Profile: <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-[10px]">{reviewUser.role}</span>
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-4 flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Current Status</span>
+                  <div className="mt-1.5">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                      reviewUser.verificationStatus === 'Verified' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                      reviewUser.verificationStatus === 'Under Review' ? 'bg-blue-50 border-blue-100 text-blue-700 animate-pulse' :
+                      reviewUser.verificationStatus === 'Rejected' ? 'bg-red-50 border-red-100 text-red-700' :
+                      'bg-gray-50 border-gray-150 text-gray-500'
+                    }`}>
+                      {reviewUser.verificationStatus || 'Not Submitted'}
+                    </span>
+                  </div>
+                </div>
+
+                {reviewUser.verificationDetails?.uploadedDate && (
+                  <p className="text-[10px] text-gray-400 mt-2 font-bold">
+                    Submitted on: {new Date(reviewUser.verificationDetails.uploadedDate).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {reviewUser.verificationDetails ? (
+              <div className="space-y-4">
+                <div className="border border-gray-150 rounded-2xl p-4 space-y-3 bg-white">
+                  <h4 className="text-xs font-extrabold text-gray-800 border-b border-gray-50 pb-2">Submitted Credentials Details</h4>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-[10px] text-gray-400 block font-semibold">Document Type</span>
+                      <span className="font-bold text-gray-800">{reviewUser.verificationDetails.documentType}</span>
+                    </div>
+                    {reviewUser.verificationDetails.documentNumber && (
+                      <div>
+                        <span className="text-[10px] text-gray-400 block font-semibold">Document ID Number</span>
+                        <span className="font-bold text-gray-800">{reviewUser.verificationDetails.documentNumber}</span>
+                      </div>
+                    )}
+                    {reviewUser.verificationDetails.issuingAuthority && (
+                      <div>
+                        <span className="text-[10px] text-gray-400 block font-semibold">Issuing Authority</span>
+                        <span className="font-bold text-gray-800">{reviewUser.verificationDetails.issuingAuthority}</span>
+                      </div>
+                    )}
+                    {(reviewUser.verificationDetails.issueDate || reviewUser.verificationDetails.expiryDate) && (
+                      <div>
+                        <span className="text-[10px] text-gray-400 block font-semibold">Validity Dates</span>
+                        <span className="font-bold text-gray-800">
+                          {reviewUser.verificationDetails.issueDate || 'N/A'} to {reviewUser.verificationDetails.expiryDate || 'Present'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {reviewUser.verificationDetails.frontSideUrl && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Front Side File</span>
+                      {reviewUser.verificationDetails.frontSideUrl.endsWith('.pdf') || reviewUser.verificationDetails.frontSideUrl.startsWith('data:application/pdf') ? (
+                        <a 
+                          href={reviewUser.verificationDetails.frontSideUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-gray-100 transition-colors"
+                        >
+                          <FileText className="text-red-500" size={18} />
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-gray-700 block truncate font-sans">Open Front PDF File</span>
+                            <span className="text-[9px] text-gray-400">PDF Document</span>
+                          </div>
+                        </a>
+                      ) : (
+                        <div className="border border-gray-150 rounded-2xl overflow-hidden relative group bg-gray-100">
+                          <img src={reviewUser.verificationDetails.frontSideUrl} alt="Front Document" className="w-full h-36 object-contain bg-slate-900" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <a href={reviewUser.verificationDetails.frontSideUrl} target="_blank" rel="noopener noreferrer" className="text-white text-xs font-bold underline">
+                              Open in New Tab
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {reviewUser.verificationDetails.backSideUrl && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Back Side File</span>
+                      {reviewUser.verificationDetails.backSideUrl.endsWith('.pdf') || reviewUser.verificationDetails.backSideUrl.startsWith('data:application/pdf') ? (
+                        <a 
+                          href={reviewUser.verificationDetails.backSideUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-gray-100 transition-colors"
+                        >
+                          <FileText className="text-red-500" size={18} />
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-gray-700 block truncate font-sans">Open Back PDF File</span>
+                            <span className="text-[9px] text-gray-400">PDF Document</span>
+                          </div>
+                        </a>
+                      ) : (
+                        <div className="border border-gray-150 rounded-2xl overflow-hidden relative group bg-gray-100">
+                          <img src={reviewUser.verificationDetails.backSideUrl} alt="Back Document" className="w-full h-36 object-contain bg-slate-900" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <a href={reviewUser.verificationDetails.backSideUrl} target="_blank" rel="noopener noreferrer" className="text-white text-xs font-bold underline">
+                              Open in New Tab
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="border border-dashed border-gray-200 rounded-2xl p-8 text-center text-gray-400 text-xs font-bold">
+                No identity verification documents have been submitted by this user.
+              </div>
+            )}
+
+            {/* Decision panel */}
+            <div className="bg-slate-50 border border-slate-150 rounded-2xl p-4 sm:p-5 space-y-4">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide block">Review Decision Workspace</span>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 mb-1">Rejection Feedback Notes (Required if Rejecting)</label>
+                  <textarea 
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="e.g. Document image is blurry or expired ID card."
+                    className="w-full rounded-xl border border-gray-200 bg-white p-2.5 text-xs focus:outline-none focus:border-red-400 min-h-[60px]"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2.5 justify-end">
+                  <button 
+                    onClick={() => setReviewUser(null)}
+                    className="text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-2 px-4 rounded-xl cursor-pointer"
+                  >
+                    Close Workspace
+                  </button>
+                  <button 
+                    onClick={() => handleVerificationReview(reviewUser._id, 'Rejected')}
+                    disabled={submittingReview}
+                    className="text-xs font-bold bg-red-650 bg-red-600 hover:bg-red-700 text-white py-2 px-4.5 rounded-xl cursor-pointer disabled:opacity-50"
+                  >
+                    Reject Credentials
+                  </button>
+                  <button 
+                    onClick={() => handleVerificationReview(reviewUser._id, 'Verified')}
+                    disabled={submittingReview}
+                    className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-5 rounded-xl cursor-pointer disabled:opacity-50"
+                  >
+                    Approve & Verify User
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

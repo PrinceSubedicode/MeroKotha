@@ -40,6 +40,8 @@ router.post('/register', async (req, res) => {
       phone,
       favorites: [],
       isVerified: role === 'Tenant' ? true : false, // Owners might require Admin verification
+      verificationStatus: 'Not Submitted',
+      verificationDetails: null,
       createdAt: new Date().toISOString()
     });
 
@@ -64,7 +66,9 @@ router.post('/register', async (req, res) => {
         photo: newUser.photo || null,
         address: newUser.address || null,
         dob: newUser.dob || null,
-        govtId: newUser.govtId || null
+        govtId: newUser.govtId || null,
+        verificationStatus: newUser.verificationStatus || 'Not Submitted',
+        verificationDetails: newUser.verificationDetails || null
       }
     });
 
@@ -115,7 +119,9 @@ router.post('/login', async (req, res) => {
         photo: user.photo || null,
         address: user.address || null,
         dob: user.dob || null,
-        govtId: user.govtId || null
+        govtId: user.govtId || null,
+        verificationStatus: user.verificationStatus || 'Not Submitted',
+        verificationDetails: user.verificationDetails || null
       }
     });
 
@@ -167,7 +173,9 @@ router.post('/switch-role', authenticateToken, async (req, res) => {
         photo: user.photo || null,
         address: user.address || null,
         dob: user.dob || null,
-        govtId: user.govtId || null
+        govtId: user.govtId || null,
+        verificationStatus: user.verificationStatus || 'Not Submitted',
+        verificationDetails: user.verificationDetails || null
       }
     });
 
@@ -198,11 +206,127 @@ router.get('/me', authenticateToken, async (req, res) => {
       address: user.address || null,
       dob: user.dob || null,
       govtId: user.govtId || null,
+      verificationStatus: user.verificationStatus || 'Not Submitted',
+      verificationDetails: user.verificationDetails || null,
       createdAt: user.createdAt
     });
   } catch (error) {
     console.error('Fetch profile me error:', error);
     res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Utility to process and save user base64 uploaded verification document locally
+function saveDocumentFile(base64String, suffix = 'doc') {
+  if (!base64String || typeof base64String !== 'string' || !base64String.startsWith('data:')) {
+    return base64String; // Return as-is if it's already a URL
+  }
+  try {
+    const matches = base64String.match(/^data:([^;]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return base64String;
+    }
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    let fileExtension = 'bin';
+    if (mimeType === 'application/pdf') {
+      fileExtension = 'pdf';
+    } else if (mimeType === 'image/jpeg') {
+      fileExtension = 'jpg';
+    } else if (mimeType === 'image/png') {
+      fileExtension = 'png';
+    } else if (mimeType === 'image/gif') {
+      fileExtension = 'gif';
+    } else {
+      const sub = mimeType.split('/')[1];
+      if (sub) fileExtension = sub;
+    }
+    
+    const fileBuffer = Buffer.from(base64Data, 'base64');
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const fileName = `verification_${suffix}_${Date.now()}_${randomSuffix}.${fileExtension}`;
+    const targetPath = path.join(path.resolve('./uploads'), fileName);
+    
+    const uploadsDir = path.resolve('./uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(targetPath, fileBuffer);
+    return `/uploads/${fileName}`;
+  } catch (error) {
+    console.error('Failed to save verification document file locally:', error);
+    return base64String;
+  }
+}
+
+// Submit user identity document verification
+router.post('/verification', authenticateToken, async (req, res) => {
+  try {
+    const { 
+      documentType, 
+      documentNumber, 
+      issuingAuthority, 
+      issueDate, 
+      expiryDate, 
+      frontSide, 
+      backSide 
+    } = req.body;
+
+    if (!documentType || !frontSide) {
+      return res.status(400).json({ message: 'Document type and front side upload are required.' });
+    }
+
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Process uploaded files (they are base64 strings or already saved paths)
+    const frontSideUrl = saveDocumentFile(frontSide, 'front');
+    const backSideUrl = backSide ? saveDocumentFile(backSide, 'back') : null;
+
+    const verificationDetails = {
+      documentType,
+      documentNumber: documentNumber || '',
+      issuingAuthority: issuingAuthority || '',
+      issueDate: issueDate || '',
+      expiryDate: expiryDate || '',
+      frontSideUrl,
+      backSideUrl,
+      uploadedDate: new Date().toISOString(),
+      verifiedDate: null,
+      rejectionReason: null
+    };
+
+    // Update user verification status and details
+    const updatedUser = await usersColl.findByIdAndUpdate(req.user._id, {
+      verificationStatus: 'Under Review',
+      verificationDetails
+    });
+
+    res.json({
+      message: 'Verification documents submitted successfully for review!',
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        roles: updatedUser.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
+        phone: updatedUser.phone,
+        isVerified: updatedUser.isVerified,
+        photo: updatedUser.photo || null,
+        address: updatedUser.address || null,
+        dob: updatedUser.dob || null,
+        govtId: updatedUser.govtId || null,
+        verificationStatus: 'Under Review',
+        verificationDetails
+      }
+    });
+  } catch (error) {
+    console.error('Submit verification error:', error);
+    res.status(500).json({ message: 'Internal server error submitting verification documents.' });
   }
 });
 
@@ -233,7 +357,22 @@ function saveProfileImage(base64String) {
 // Update profile details
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const { name, phone, password, photo, address, dob, govtId } = req.body;
+    const { 
+      name, 
+      phone, 
+      password, 
+      photo, 
+      address, 
+      dob, 
+      govtId,
+      documentType,
+      documentNumber,
+      issuingAuthority,
+      issueDate,
+      expiryDate,
+      frontSide,
+      backSide
+    } = req.body;
 
     const usersColl = db.collection('users');
     const user = await usersColl.findById(req.user._id);
@@ -260,6 +399,25 @@ router.put('/profile', authenticateToken, async (req, res) => {
       updates.password = await bcrypt.hash(password, 10);
     }
 
+    if (frontSide) {
+      const frontSideUrl = saveDocumentFile(frontSide, 'front');
+      const backSideUrl = backSide ? saveDocumentFile(backSide, 'back') : null;
+      
+      updates.verificationStatus = 'Under Review';
+      updates.verificationDetails = {
+        documentType: documentType || 'Citizenship Certificate',
+        documentNumber: documentNumber || '',
+        issuingAuthority: issuingAuthority || '',
+        issueDate: issueDate || '',
+        expiryDate: expiryDate || '',
+        frontSideUrl,
+        backSideUrl,
+        uploadedDate: new Date().toISOString(),
+        verifiedDate: null,
+        rejectionReason: null
+      };
+    }
+
     const updatedUser = await usersColl.findByIdAndUpdate(req.user._id, updates);
 
     res.json({
@@ -275,7 +433,9 @@ router.put('/profile', authenticateToken, async (req, res) => {
         photo: updatedUser.photo || null,
         address: updatedUser.address || null,
         dob: updatedUser.dob || null,
-        govtId: updatedUser.govtId || null
+        govtId: updatedUser.govtId || null,
+        verificationStatus: updatedUser.verificationStatus || 'Not Submitted',
+        verificationDetails: updatedUser.verificationDetails || null
       }
     });
   } catch (error) {

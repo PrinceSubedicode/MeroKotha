@@ -65,6 +65,8 @@ router.get('/users', async (req, res) => {
       role: u.role,
       phone: u.phone,
       isVerified: u.isVerified || false,
+      verificationStatus: u.verificationStatus || 'Not Submitted',
+      verificationDetails: u.verificationDetails || null,
       createdAt: u.createdAt
     }));
 
@@ -113,7 +115,24 @@ router.put('/users/:id/verify', async (req, res) => {
     }
 
     const newVerifyState = !userToVerify.isVerified;
-    const updated = await usersColl.findByIdAndUpdate(req.params.id, { isVerified: newVerifyState });
+    const updates = { isVerified: newVerifyState };
+    
+    if (newVerifyState) {
+      updates.verificationStatus = 'Verified';
+      updates.verificationDetails = {
+        ...(userToVerify.verificationDetails || {}),
+        verifiedDate: new Date().toISOString(),
+        rejectionReason: null
+      };
+    } else {
+      updates.verificationStatus = 'Rejected';
+      updates.verificationDetails = {
+        ...(userToVerify.verificationDetails || {}),
+        rejectionReason: 'Revoked by administrator'
+      };
+    }
+
+    const updated = await usersColl.findByIdAndUpdate(req.params.id, updates);
 
     res.json({
       message: `User '${userToVerify.name}' verification state set to ${newVerifyState}`,
@@ -121,12 +140,60 @@ router.put('/users/:id/verify', async (req, res) => {
         _id: updated._id,
         name: updated.name,
         role: updated.role,
-        isVerified: updated.isVerified
+        isVerified: updated.isVerified,
+        verificationStatus: updated.verificationStatus
       }
     });
 
   } catch (error) {
     console.error('Admin user verification toggle failed:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// PUT /api/admin/users/:id/verification-review: Approve or Reject identity verification documents
+router.put('/users/:id/verification-review', async (req, res) => {
+  try {
+    const { status, rejectionReason } = req.body;
+    if (!status || !['Verified', 'Rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status update. Must be Verified or Rejected.' });
+    }
+
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const updates = {
+      verificationStatus: status,
+      isVerified: status === 'Verified'
+    };
+
+    const currentDetails = user.verificationDetails || {};
+    updates.verificationDetails = {
+      ...currentDetails,
+      verifiedDate: status === 'Verified' ? new Date().toISOString() : null,
+      rejectionReason: status === 'Rejected' ? (rejectionReason || 'Documents rejected by administrator.') : null
+    };
+
+    const updated = await usersColl.findByIdAndUpdate(req.params.id, updates);
+
+    res.json({
+      message: `User identity verification status set to '${status}' successfully!`,
+      user: {
+        _id: updated._id,
+        name: updated.name,
+        role: updated.role,
+        isVerified: updated.isVerified,
+        verificationStatus: updated.verificationStatus,
+        verificationDetails: updated.verificationDetails
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin user verification review failed:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
