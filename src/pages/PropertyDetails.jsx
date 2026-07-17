@@ -253,9 +253,18 @@ export default function PropertyDetails() {
             {/* Owner badge summary */}
             {property.ownerInfo ? (
               <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-4 mb-6">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold shrink-0">
-                  <User size={20} />
-                </div>
+                {property.ownerInfo.photo ? (
+                  <img 
+                    src={property.ownerInfo.photo} 
+                    alt={property.ownerInfo.name} 
+                    referrerPolicy="no-referrer"
+                    className="h-11 w-11 rounded-xl object-cover border border-emerald-500 shrink-0" 
+                  />
+                ) : (
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold shrink-0">
+                    <User size={20} />
+                  </div>
+                )}
                 <div>
                   <h4 className="text-sm font-bold text-gray-800">{property.ownerInfo.name}</h4>
                   <p className="text-[10px] text-gray-400 font-semibold uppercase flex items-center gap-0.5">

@@ -1,6 +1,8 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 import { db } from '../db.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 
@@ -58,7 +60,11 @@ router.post('/register', async (req, res) => {
         role: newUser.role,
         roles: newUser.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: newUser.phone,
-        isVerified: newUser.isVerified
+        isVerified: newUser.isVerified,
+        photo: newUser.photo || null,
+        address: newUser.address || null,
+        dob: newUser.dob || null,
+        govtId: newUser.govtId || null
       }
     });
 
@@ -105,7 +111,11 @@ router.post('/login', async (req, res) => {
         role: user.role,
         roles: user.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: user.phone,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        photo: user.photo || null,
+        address: user.address || null,
+        dob: user.dob || null,
+        govtId: user.govtId || null
       }
     });
 
@@ -153,7 +163,11 @@ router.post('/switch-role', authenticateToken, async (req, res) => {
         role: role,
         roles: ['Tenant', 'Property Owner'],
         phone: user.phone,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        photo: user.photo || null,
+        address: user.address || null,
+        dob: user.dob || null,
+        govtId: user.govtId || null
       }
     });
 
@@ -180,6 +194,10 @@ router.get('/me', authenticateToken, async (req, res) => {
       roles: user.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
       phone: user.phone,
       isVerified: user.isVerified,
+      photo: user.photo || null,
+      address: user.address || null,
+      dob: user.dob || null,
+      govtId: user.govtId || null,
       createdAt: user.createdAt
     });
   } catch (error) {
@@ -188,10 +206,34 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Utility to process and save user base64 uploaded profile photo locally
+function saveProfileImage(base64String) {
+  if (!base64String || typeof base64String !== 'string' || !base64String.startsWith('data:image/')) {
+    return base64String; // Return as-is if it's already a URL
+  }
+  try {
+    const matches = base64String.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return base64String;
+    }
+    const fileExtension = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+    const imageBuffer = Buffer.from(matches[2], 'base64');
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const fileName = `user_${Date.now()}_${randomSuffix}.${fileExtension}`;
+    const targetPath = path.join(path.resolve('./uploads'), fileName);
+    
+    fs.writeFileSync(targetPath, imageBuffer);
+    return `/uploads/${fileName}`;
+  } catch (error) {
+    console.error('Failed to save profile image locally:', error);
+    return base64String;
+  }
+}
+
 // Update profile details
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const { name, phone, password } = req.body;
+    const { name, phone, password, photo, address, dob, govtId } = req.body;
 
     const usersColl = db.collection('users');
     const user = await usersColl.findById(req.user._id);
@@ -200,8 +242,20 @@ router.put('/profile', authenticateToken, async (req, res) => {
     }
 
     const updates = {};
-    if (name) updates.name = name;
-    if (phone) updates.phone = phone;
+    if (name !== undefined) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (address !== undefined) updates.address = address;
+    if (dob !== undefined) updates.dob = dob;
+    if (govtId !== undefined) updates.govtId = govtId;
+    
+    if (photo !== undefined) {
+      if (!photo) {
+        updates.photo = null;
+      } else {
+        updates.photo = saveProfileImage(photo);
+      }
+    }
+
     if (password) {
       updates.password = await bcrypt.hash(password, 10);
     }
@@ -217,7 +271,11 @@ router.put('/profile', authenticateToken, async (req, res) => {
         role: updatedUser.role,
         roles: updatedUser.role === 'Admin' ? ['Admin'] : ['Tenant', 'Property Owner'],
         phone: updatedUser.phone,
-        isVerified: updatedUser.isVerified
+        isVerified: updatedUser.isVerified,
+        photo: updatedUser.photo || null,
+        address: updatedUser.address || null,
+        dob: updatedUser.dob || null,
+        govtId: updatedUser.govtId || null
       }
     });
   } catch (error) {

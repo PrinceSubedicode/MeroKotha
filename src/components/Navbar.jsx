@@ -121,9 +121,18 @@ export default function Navbar() {
 
                 <div className="flex items-center gap-2 ml-1">
                   <Link to="/profile" className="flex items-center gap-2 group">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700 group-hover:bg-emerald-200 transition-colors">
-                      <User size={18} className="stroke-[2.5]" />
-                    </span>
+                    {user.photo ? (
+                      <img 
+                        src={user.photo} 
+                        alt={user.name} 
+                        referrerPolicy="no-referrer"
+                        className="h-9 w-9 rounded-full object-cover border border-emerald-500" 
+                      />
+                    ) : (
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700 group-hover:bg-emerald-200 transition-colors">
+                        <User size={18} className="stroke-[2.5]" />
+                      </span>
+                    )}
                     <span className="text-sm font-semibold text-gray-800 hover:text-emerald-600 transition-colors">
                       {user.name.split(' ')[0]}
                     </span>
@@ -208,9 +217,18 @@ export default function Navbar() {
             {user ? (
               <div className="border-t border-gray-100 pt-3 mt-1 flex flex-col gap-3">
                 <div className="px-3 py-1 flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                    <User size={18} />
-                  </div>
+                  {user.photo ? (
+                    <img 
+                      src={user.photo} 
+                      alt={user.name} 
+                      referrerPolicy="no-referrer"
+                      className="h-9 w-9 rounded-full object-cover border border-emerald-500" 
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <User size={18} />
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm font-bold text-gray-800">{user.name}</p>
                     <p className="text-xs text-gray-500">{user.role}</p>

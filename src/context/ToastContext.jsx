@@ -33,8 +33,18 @@ export function ToastProvider({ children }) {
   const warning = useCallback((msg, dur) => addToast(msg, 'warning', dur), [addToast]);
   const info = useCallback((msg, dur) => addToast(msg, 'info', dur), [addToast]);
 
+  const showToast = useCallback((msgOrObj, type = 'success', duration = 3500) => {
+    if (msgOrObj && typeof msgOrObj === 'object') {
+      const { message, type: objType, title } = msgOrObj;
+      const fullMsg = title ? `${title}: ${message}` : message;
+      addToast(fullMsg, objType || 'success', duration);
+    } else {
+      addToast(msgOrObj, type, duration);
+    }
+  }, [addToast]);
+
   return (
-    <ToastContext.Provider value={{ toast: addToast, success, error, warning, info, removeToast }}>
+    <ToastContext.Provider value={{ toast: addToast, showToast, success, error, warning, info, removeToast }}>
       {children}
       
       {/* Toast Notification Portal / List */}

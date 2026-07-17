@@ -147,7 +147,8 @@ router.get('/:id', async (req, res) => {
         name: owner.name,
         email: owner.email,
         phone: owner.phone,
-        isVerified: owner.isVerified
+        isVerified: owner.isVerified,
+        photo: owner.photo || null
       } : null
     });
   } catch (error) {
