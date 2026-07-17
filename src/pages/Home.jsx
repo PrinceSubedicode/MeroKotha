@@ -241,7 +241,7 @@ export default function Home() {
           {/* Simple Clean Title Header */}
           <div className="max-w-3xl mb-8">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-3 leading-tight">
-              Where to next, {user ? user.name.split(' ')[0] : 'traveler'}?
+              Your Perfect Rental Starts Here{user ? `, ${user.name.split(' ')[0]}` : ''}!
             </h1>
             <p className="text-sm sm:text-base text-gray-500 font-medium">
               Find budget-friendly rooms, flats, and homes with zero broker commissions in Nepal.
