@@ -63,6 +63,77 @@ export default function OwnerDashboard() {
   const [formLat, setFormLat] = useState('');
   const [formLng, setFormLng] = useState('');
   const [showFormMap, setShowFormMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState({ lat: 27.7172, lng: 85.3240 });
+
+  // Auto-geocode client-side when geographic selections update
+  useEffect(() => {
+    if (formProvince || formDistrict || formCity || formLocation) {
+      const searchTerms = [
+        formLocation || '',
+        formCity || '',
+        formDistrict || '',
+        formProvince || ''
+      ];
+
+      const lookup = {
+        'jhamsikhel': { lat: 27.6787, lng: 85.3094 },
+        'koteshwor': { lat: 27.6749, lng: 85.3486 },
+        'lakeside': { lat: 28.2104, lng: 83.9575 },
+        'milanchowk': { lat: 27.6976, lng: 83.4542 },
+        'durbar area': { lat: 27.6722, lng: 85.4278 },
+        'kathmandu': { lat: 27.7172, lng: 85.3240 },
+        'lalitpur': { lat: 27.6710, lng: 85.3240 },
+        'bhaktapur': { lat: 27.6722, lng: 85.4278 },
+        'pokhara': { lat: 28.2096, lng: 83.9856 },
+        'butwal': { lat: 27.6876, lng: 83.4486 },
+        'dharan': { lat: 26.8125, lng: 87.2835 },
+        'biratnagar': { lat: 26.4525, lng: 87.2718 },
+        'nepalgunj': { lat: 28.0500, lng: 81.6167 },
+        'chitwan': { lat: 27.6833, lng: 84.4333 },
+        'bharatpur': { lat: 27.6833, lng: 84.4333 },
+        'kaski': { lat: 28.2096, lng: 83.9856 },
+        'rupandehi': { lat: 27.6876, lng: 83.4486 },
+        'sunsari': { lat: 26.8125, lng: 87.2835 },
+        'morang': { lat: 26.4525, lng: 87.2718 },
+        'hetauda': { lat: 27.4262, lng: 85.0322 },
+        'janakpur': { lat: 26.7275, lng: 85.9225 },
+        'birgunj': { lat: 27.0131, lng: 84.8725 },
+        'birendranagar': { lat: 28.5912, lng: 81.6247 },
+        'surkhet': { lat: 28.5912, lng: 81.6247 },
+        'dhangadhi': { lat: 28.6853, lng: 80.6214 },
+        'mahendranagar': { lat: 28.9667, lng: 80.1833 },
+        'itahari': { lat: 26.6650, lng: 87.2740 },
+        'damak': { lat: 26.6667, lng: 87.6833 },
+        'birtamode': { lat: 26.6333, lng: 87.9833 },
+        'bagmati province': { lat: 27.7172, lng: 85.3240 },
+        'gandaki province': { lat: 28.2096, lng: 83.9856 },
+        'lumbini province': { lat: 27.6876, lng: 83.4486 },
+        'koshi province': { lat: 26.4525, lng: 87.2718 },
+        'madhesh province': { lat: 26.7275, lng: 85.9225 },
+        'karnali province': { lat: 28.5912, lng: 81.6247 },
+        'sudurpashchim province': { lat: 28.6853, lng: 80.6214 }
+      };
+
+      let match = null;
+      for (const term of searchTerms) {
+        if (!term) continue;
+        const cleanTerm = term.toLowerCase().trim();
+        for (const key of Object.keys(lookup)) {
+          if (cleanTerm.includes(key) || key.includes(cleanTerm)) {
+            match = lookup[key];
+            break;
+          }
+        }
+        if (match) break;
+      }
+
+      if (match) {
+        setFormLat(String(match.lat));
+        setFormLng(String(match.lng));
+        setMapCenter({ lat: match.lat, lng: match.lng });
+      }
+    }
+  }, [formProvince, formDistrict, formCity, formLocation]);
   
   // Edit listing identifier
   const [editingId, setEditingId] = useState(null);
@@ -232,6 +303,7 @@ export default function OwnerDashboard() {
     setFormLat('');
     setFormLng('');
     setShowFormMap(false);
+    setMapCenter({ lat: 27.7172, lng: 85.3240 });
     setEditingId(null);
     setFormSuccess(null);
     setFormError(null);
@@ -256,6 +328,9 @@ export default function OwnerDashboard() {
     setFormImagesBase64(prop.images || []);
     setFormLat(prop.lat ? String(prop.lat) : '');
     setFormLng(prop.lng ? String(prop.lng) : '');
+    if (prop.lat && prop.lng) {
+      setMapCenter({ lat: Number(prop.lat), lng: Number(prop.lng) });
+    }
     setShowFormMap(false);
     setActiveTab('edit');
   };
@@ -303,6 +378,13 @@ export default function OwnerDashboard() {
         setSubmittingForm(false);
         return;
       }
+    }
+
+    // Validate coordinates
+    if (!formLat || !formLng || isNaN(Number(formLat)) || isNaN(Number(formLng))) {
+      setFormError('Latitude and Longitude are required. Please select a location on the interactive map or verify your coordinates.');
+      setSubmittingForm(false);
+      return;
     }
 
     // Form payload construction
@@ -877,7 +959,10 @@ export default function OwnerDashboard() {
                     <div className="h-64 w-full relative">
                       <MapIntegrationWrapper fallbackHeight="256px">
                         <Map
-                          defaultCenter={{ lat: Number(formLat) || 27.7172, lng: Number(formLng) || 85.3240 }}
+                          center={mapCenter}
+                          onCameraChanged={(e) => {
+                            setMapCenter(e.detail.center);
+                          }}
                           defaultZoom={13}
                           mapId="OWNER_DASHBOARD_PICKER_MAP"
                           internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
@@ -885,8 +970,11 @@ export default function OwnerDashboard() {
                           gestureHandling="cooperative"
                           onClick={(e) => {
                             if (e.detail.latLng) {
-                              setFormLat(String(e.detail.latLng.lat.toFixed(6)));
-                              setFormLng(String(e.detail.latLng.lng.toFixed(6)));
+                              const newLat = e.detail.latLng.lat.toFixed(6);
+                              const newLng = e.detail.latLng.lng.toFixed(6);
+                              setFormLat(String(newLat));
+                              setFormLng(String(newLng));
+                              setMapCenter({ lat: Number(newLat), lng: Number(newLng) });
                             }
                           }}
                         >
@@ -895,8 +983,11 @@ export default function OwnerDashboard() {
                             draggable={true}
                             onDragEnd={(e) => {
                               if (e.latLng) {
-                                setFormLat(String(e.latLng.lat().toFixed(6)));
-                                setFormLng(String(e.latLng.lng().toFixed(6)));
+                                const newLat = e.latLng.lat().toFixed(6);
+                                const newLng = e.latLng.lng().toFixed(6);
+                                setFormLat(String(newLat));
+                                setFormLng(String(newLng));
+                                setMapCenter({ lat: Number(newLat), lng: Number(newLng) });
                               }
                             }}
                           >

@@ -25,7 +25,9 @@
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6787,
+    "lng": 85.3094
   },
   {
     "_id": "cgnm78urn",
@@ -52,7 +54,9 @@
       "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6749,
+    "lng": 85.3486
   },
   {
     "_id": "7eae0xbzk",
@@ -81,7 +85,9 @@
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 28.2104,
+    "lng": 83.9575
   },
   {
     "_id": "we62bv8aj",
@@ -104,7 +110,9 @@
       "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6976,
+    "lng": 83.4542
   },
   {
     "_id": "pkh2bhk15k",
@@ -130,7 +138,9 @@
       "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 28.2144,
+    "lng": 83.9565
   },
   {
     "_id": "9zs10k788",
@@ -153,7 +163,9 @@
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "4vo3hhk8e",
-    "status": "Pending"
+    "status": "Pending",
+    "lat": 27.6722,
+    "lng": 85.4278
   },
   {
     "_id": "ldm2pnh5v",
@@ -181,7 +193,9 @@
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6787,
+    "lng": 85.3094
   },
   {
     "_id": "1ifwetcvr",
@@ -208,7 +222,9 @@
       "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6749,
+    "lng": 85.3486
   },
   {
     "_id": "c373x2tx6",
@@ -237,7 +253,9 @@
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 28.2104,
+    "lng": 83.9575
   },
   {
     "_id": "a3qr42nnx",
@@ -263,7 +281,9 @@
       "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 28.2144,
+    "lng": 83.9565
   },
   {
     "_id": "q37heflu5",
@@ -286,7 +306,9 @@
       "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Approved"
+    "status": "Approved",
+    "lat": 27.6976,
+    "lng": 83.4542
   },
   {
     "_id": "igepvsp04",
@@ -309,6 +331,8 @@
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800"
     ],
     "owner": "8n82gbe78",
-    "status": "Pending"
+    "status": "Pending",
+    "lat": 27.6722,
+    "lng": 85.4278
   }
 ]

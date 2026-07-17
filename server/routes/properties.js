@@ -11,6 +11,67 @@ if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
+// Fallback dynamic geocoder for Nepal addresses
+function getApproximateCoordinates(province, district, city, location) {
+  const searchTerms = [
+    location || '',
+    city || '',
+    district || '',
+    province || ''
+  ];
+
+  const lookup = {
+    'jhamsikhel': { lat: 27.6787, lng: 85.3094 },
+    'koteshwor': { lat: 27.6749, lng: 85.3486 },
+    'lakeside': { lat: 28.2104, lng: 83.9575 },
+    'milanchowk': { lat: 27.6976, lng: 83.4542 },
+    'durbar area': { lat: 27.6722, lng: 85.4278 },
+    'kathmandu': { lat: 27.7172, lng: 85.3240 },
+    'lalitpur': { lat: 27.6710, lng: 85.3240 },
+    'bhaktapur': { lat: 27.6722, lng: 85.4278 },
+    'pokhara': { lat: 28.2096, lng: 83.9856 },
+    'butwal': { lat: 27.6876, lng: 83.4486 },
+    'dharan': { lat: 26.8125, lng: 87.2835 },
+    'biratnagar': { lat: 26.4525, lng: 87.2718 },
+    'nepalgunj': { lat: 28.0500, lng: 81.6167 },
+    'chitwan': { lat: 27.6833, lng: 84.4333 },
+    'bharatpur': { lat: 27.6833, lng: 84.4333 },
+    'kaski': { lat: 28.2096, lng: 83.9856 },
+    'rupandehi': { lat: 27.6876, lng: 83.4486 },
+    'sunsari': { lat: 26.8125, lng: 87.2835 },
+    'morang': { lat: 26.4525, lng: 87.2718 },
+    'hetauda': { lat: 27.4262, lng: 85.0322 },
+    'janakpur': { lat: 26.7275, lng: 85.9225 },
+    'birgunj': { lat: 27.0131, lng: 84.8725 },
+    'birendranagar': { lat: 28.5912, lng: 81.6247 },
+    'surkhet': { lat: 28.5912, lng: 81.6247 },
+    'dhangadhi': { lat: 28.6853, lng: 80.6214 },
+    'mahendranagar': { lat: 28.9667, lng: 80.1833 },
+    'itahari': { lat: 26.6650, lng: 87.2740 },
+    'damak': { lat: 26.6667, lng: 87.6833 },
+    'birtamode': { lat: 26.6333, lng: 87.9833 },
+    'bagmati province': { lat: 27.7172, lng: 85.3240 },
+    'gandaki province': { lat: 28.2096, lng: 83.9856 },
+    'lumbini province': { lat: 27.6876, lng: 83.4486 },
+    'koshi province': { lat: 26.4525, lng: 87.2718 },
+    'madhesh province': { lat: 26.7275, lng: 85.9225 },
+    'karnali province': { lat: 28.5912, lng: 81.6247 },
+    'sudurpashchim province': { lat: 28.6853, lng: 80.6214 }
+  };
+
+  for (const term of searchTerms) {
+    if (!term) continue;
+    const cleanTerm = term.toLowerCase().trim();
+    for (const key of Object.keys(lookup)) {
+      if (cleanTerm.includes(key) || key.includes(cleanTerm)) {
+        return lookup[key];
+      }
+    }
+  }
+
+  return { lat: 27.7172, lng: 85.3240 };
+}
+
 // Utility to process and save base64 uploaded images locally
 function saveImage(base64String) {
   if (!base64String || typeof base64String !== 'string' || !base64String.startsWith('data:image/')) {
@@ -95,8 +156,17 @@ router.get('/', async (req, res) => {
     const resolvedProperties = await Promise.all(
       properties.map(async (p) => {
         const ownerInfo = await usersColl.findById(p.owner);
+        let lat = p.lat;
+        let lng = p.lng;
+        if (lat === undefined || lat === null || lng === undefined || lng === null) {
+          const approx = getApproximateCoordinates(p.province, p.district, p.city, p.location);
+          lat = approx.lat;
+          lng = approx.lng;
+        }
         return {
           ...p,
+          lat,
+          lng,
           ownerInfo: ownerInfo ? { name: ownerInfo.name, phone: ownerInfo.phone, email: ownerInfo.email } : null
         };
       })
@@ -144,8 +214,18 @@ router.get('/:id', async (req, res) => {
     const bookingsColl = db.collection('bookings');
     const confirmedBookings = await bookingsColl.find({ propertyId: property._id, status: 'Confirmed' });
 
+    let lat = property.lat;
+    let lng = property.lng;
+    if (lat === undefined || lat === null || lng === undefined || lng === null) {
+      const approx = getApproximateCoordinates(property.province, property.district, property.city, property.location);
+      lat = approx.lat;
+      lng = approx.lng;
+    }
+
     res.json({
       ...property,
+      lat,
+      lng,
       ownerInfo: owner ? {
         _id: owner._id,
         name: owner.name,
@@ -177,6 +257,17 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
       return res.status(400).json({ message: 'Please provide all required fields.' });
     }
 
+    // Validate coordinates
+    if (lat === undefined || lat === null || lat === '' || lng === undefined || lng === null || lng === '') {
+      return res.status(400).json({ message: 'Latitude and Longitude are required. Please select a location on the interactive map.' });
+    }
+
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+    if (isNaN(numLat) || isNaN(numLng)) {
+      return res.status(400).json({ message: 'Coordinates must be valid numbers.' });
+    }
+
     // Process uploaded base64 strings
     const processedImages = (images || []).map(img => saveImage(img));
     
@@ -201,8 +292,8 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
       images: processedImages,
       owner: req.user._id,
       status: 'Pending', // Requires admin verification
-      lat: lat ? Number(lat) : null,
-      lng: lng ? Number(lng) : null
+      lat: numLat,
+      lng: numLng
     });
 
     res.status(201).json({
@@ -238,6 +329,17 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
       lat, lng
     } = req.body;
 
+    // Validate coordinates on edit
+    if (lat === undefined || lat === null || lat === '' || lng === undefined || lng === null || lng === '') {
+      return res.status(400).json({ message: 'Latitude and Longitude are required. Please select a location on the interactive map.' });
+    }
+
+    const numLat = Number(lat);
+    const numLng = Number(lng);
+    if (isNaN(numLat) || isNaN(numLng)) {
+      return res.status(400).json({ message: 'Coordinates must be valid numbers.' });
+    }
+
     const updates = {};
     if (title) updates.title = title;
     if (description) updates.description = description;
@@ -250,8 +352,8 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
     if (bedrooms) updates.bedrooms = Number(bedrooms);
     if (bathrooms) updates.bathrooms = Number(bathrooms);
     if (facilities) updates.facilities = facilities;
-    if (lat !== undefined) updates.lat = lat ? Number(lat) : null;
-    if (lng !== undefined) updates.lng = lng ? Number(lng) : null;
+    updates.lat = numLat;
+    updates.lng = numLng;
     
     if (images) {
       updates.images = images.map(img => saveImage(img));
