@@ -93,19 +93,19 @@ export default function Navbar() {
                 )}
 
                 {/* Dashboard Shortcut Tag */}
-                <Link 
-                  to={getDashboardLink()} 
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
-                >
-                  {user.role === 'Admin' ? (
-                    <Shield size={14} className="text-emerald-500" />
-                  ) : user.role === 'Property Owner' ? (
-                    <PlusCircle size={14} className="text-emerald-500" />
-                  ) : (
-                    <ClipboardList size={14} className="text-emerald-500" />
-                  )}
-                  {user.role} Dashboard
-                </Link>
+                {user.role !== 'Admin' && (
+                  <Link 
+                    to={getDashboardLink()} 
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
+                  >
+                    {user.role === 'Property Owner' ? (
+                      <PlusCircle size={14} className="text-emerald-500" />
+                    ) : (
+                      <ClipboardList size={14} className="text-emerald-500" />
+                    )}
+                    {user.role} Dashboard
+                  </Link>
+                )}
 
                 {/* Role Switcher Button */}
                 {user.role !== 'Admin' && (
@@ -235,13 +235,15 @@ export default function Navbar() {
                   </div>
                 </div>
 
-                <Link 
-                  to={getDashboardLink()}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700"
-                >
-                  Go to {user.role} Dashboard
-                </Link>
+                {user.role !== 'Admin' && (
+                  <Link 
+                    to={getDashboardLink()}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-700"
+                  >
+                    Go to {user.role} Dashboard
+                  </Link>
+                )}
 
                 {user.role !== 'Admin' && (
                   <button 

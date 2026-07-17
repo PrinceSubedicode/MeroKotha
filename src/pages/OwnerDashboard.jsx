@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { NEPAL_GEOGRAPHY, GENERAL_FACILITIES, PROPERTY_TYPES } from '../utils/nepalLocations.js';
-import { PlusCircle, ClipboardList, Home, Mail, Phone, Edit, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X, Image as ImageIcon, Send, MapPin, Map as MapIcon } from 'lucide-react';
+import { PlusCircle, ClipboardList, Home, Mail, Phone, Edit, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X, Image as ImageIcon, Send, MapPin, Map as MapIcon, Bell, Check } from 'lucide-react';
 import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
@@ -15,8 +15,20 @@ export default function OwnerDashboard() {
   // Owner state data
   const [listings, setListings] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
   const [loadingListings, setLoadingListings] = useState(true);
   const [loadingInquiries, setLoadingInquiries] = useState(true);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+
+  // Booking & Alert action managers
+  const [rejectionId, setRejectionId] = useState(null);
+  const [rejectReasonInput, setRejectReasonInput] = useState('');
+  const [cancellingId, setCancellingId] = useState(null);
+  const [cancelReasonInput, setCancelReasonInput] = useState('');
+  const [submittingAction, setSubmittingAction] = useState(false);
 
   // Form Field State managers (Shared for Create / Edit)
   const [formTitle, setFormTitle] = useState('');
@@ -70,12 +82,117 @@ export default function OwnerDashboard() {
     }
   };
 
+  // Fetch incoming bookings
+  const loadBookings = async () => {
+    setLoadingBookings(true);
+    try {
+      const res = await api.get('/bookings/owner');
+      setBookings(res.data);
+    } catch (err) {
+      console.error('Failed fetching owner bookings:', err);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  // Fetch owner activity alerts
+  const loadNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const res = await api.get('/notifications');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error('Failed fetching owner notifications:', err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadListings();
       loadInquiries();
+      loadBookings();
+      loadNotifications();
     }
   }, [user]);
+
+  const handleAcceptBooking = async (bookingId) => {
+    try {
+      await api.put(`/bookings/${bookingId}/status`, { status: 'Confirmed' });
+      loadBookings();
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to accept booking:', err);
+      alert(err.response?.data?.message || 'Failed to accept booking.');
+    }
+  };
+
+  const handleRejectBooking = async (bookingId) => {
+    setSubmittingAction(true);
+    try {
+      await api.put(`/bookings/${bookingId}/status`, { 
+        status: 'Rejected',
+        rejectionReason: rejectReasonInput || 'Owner rejected the booking request.'
+      });
+      setRejectionId(null);
+      setRejectReasonInput('');
+      loadBookings();
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to reject booking:', err);
+      alert(err.response?.data?.message || 'Failed to reject booking.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleCancelBookingByOwner = async (bookingId) => {
+    setSubmittingAction(true);
+    try {
+      await api.put(`/bookings/${bookingId}/status`, { 
+        status: 'Cancelled',
+        cancellationReason: cancelReasonInput || 'Owner cancelled this booking.'
+      });
+      setCancellingId(null);
+      setCancelReasonInput('');
+      loadBookings();
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to cancel booking:', err);
+      alert(err.response?.data?.message || 'Failed to cancel booking.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleMarkBookingCompleted = async (bookingId) => {
+    try {
+      await api.put(`/bookings/${bookingId}/status`, { status: 'Completed' });
+      loadBookings();
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to complete booking:', err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.put('/notifications/read-all');
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to mark all read:', err);
+    }
+  };
+
+  const handleMarkRead = async (id) => {
+    try {
+      await api.put(`/notifications/${id}/read`);
+      loadNotifications();
+    } catch (err) {
+      console.error('Failed to mark notification read:', err);
+    }
+  };
 
   // Clean form input states
   const resetForm = () => {
@@ -247,11 +364,11 @@ export default function OwnerDashboard() {
       </p>
 
       {/* Dashboard Custom Tab Controls */}
-      <div className="flex border-b border-gray-150 mt-8 mb-8" id="owner-tabs-container">
+      <div className="flex flex-wrap border-b border-gray-150 mt-8 mb-8" id="owner-tabs-container">
         <button
           onClick={() => { setActiveTab('listings'); resetForm(); }}
-          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all ${
-            activeTab === 'listings' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-emerald-600'
+          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'listings' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-500 hover:text-emerald-600'
           }`}
         >
           <Home size={16} /> My Properties ({listings.length})
@@ -259,8 +376,8 @@ export default function OwnerDashboard() {
 
         <button
           onClick={() => { resetForm(); setActiveTab('add'); }}
-          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all ${
-            activeTab === 'add' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-emerald-600'
+          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'add' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-500 hover:text-emerald-600'
           }`}
           id="owner-add-listing-tab"
         >
@@ -269,11 +386,20 @@ export default function OwnerDashboard() {
 
         <button
           onClick={() => { setActiveTab('inquiries'); resetForm(); }}
-          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all ${
-            activeTab === 'inquiries' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-emerald-600'
+          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'inquiries' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-500 hover:text-emerald-600'
           }`}
         >
           <Mail size={16} /> Tenant Inquiries ({inquiries.length})
+        </button>
+
+        <button
+          onClick={() => { setActiveTab('bookings'); resetForm(); }}
+          className={`py-3 px-5 text-sm font-bold flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'bookings' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-500 hover:text-emerald-600'
+          }`}
+        >
+          <ClipboardList size={16} /> Booking Reservations ({bookings.length})
         </button>
       </div>
 
@@ -836,6 +962,292 @@ export default function OwnerDashboard() {
             </div>
           )}
         </section>
+      )}
+
+      {/* VIEW: Booking Reservations Panel */}
+      {activeTab === 'bookings' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Bookings List (2 columns) */}
+          <section className="lg:col-span-2 space-y-6">
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-extrabold text-gray-800 text-base">Booking Requests & Reservations</h2>
+                <button onClick={loadBookings} className="text-gray-400 hover:text-emerald-600 cursor-pointer">
+                  <RefreshCw size={14} />
+                </button>
+              </div>
+
+              {loadingBookings ? (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2].map(n => <div key={n} className="bg-gray-50 h-32 rounded-xl"></div>)}
+                </div>
+              ) : bookings.length === 0 ? (
+                <div className="text-center py-16 border border-dashed border-gray-150 rounded-2xl bg-gray-50/50">
+                  <ClipboardList size={36} className="mx-auto text-gray-300 mb-3" />
+                  <h3 className="font-bold text-gray-800 text-sm">No bookings found</h3>
+                  <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+                    When tenants click "Book Now" on your property listing pages, their request details and contact credentials will be collected here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4" id="owner-bookings-catalog">
+                  {bookings.map((b) => (
+                    <article 
+                      key={b._id}
+                      className="border border-gray-100 rounded-2xl p-5 hover:border-gray-200 transition-all bg-white shadow-xs"
+                    >
+                      {/* Header block */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-50 pb-3 mb-3">
+                        <div className="flex items-center gap-3">
+                          <img src={b.propertyImage} alt={b.propertyTitle} className="h-10 w-12 object-cover rounded-lg bg-gray-50 border shrink-0" referrerPolicy="no-referrer" />
+                          <div>
+                            <h4 className="text-[9px] text-gray-400 uppercase tracking-wider">Booked Property:</h4>
+                            <h3 className="font-extrabold text-gray-900 text-sm">{b.propertyTitle}</h3>
+                            <p className="text-[10px] text-gray-500">Filed on {new Date(b.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Status Label */}
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                          b.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-800 border-emerald-150' :
+                          b.status === 'Rejected' ? 'bg-red-50 text-red-800 border-red-150' :
+                          b.status === 'Cancelled' ? 'bg-gray-100 text-gray-600 border-gray-200' :
+                          b.status === 'Completed' ? 'bg-indigo-50 text-indigo-800 border-indigo-150' :
+                          'bg-amber-50 text-amber-800 border-amber-150'
+                        }`}>
+                          {b.status}
+                        </span>
+                      </div>
+
+                      {/* Content segments */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        
+                        {/* Booking dates and specs */}
+                        <div className="md:col-span-2 space-y-3">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 text-xs bg-gray-50 p-3 rounded-xl">
+                            <div>
+                              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Move-In Date</span>
+                              <span className="font-semibold text-gray-800">{new Date(b.moveInDate || b.checkInDate).toLocaleDateString()}</span>
+                            </div>
+                            {b.checkOutDate && (
+                              <div>
+                                <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-Out Date</span>
+                                <span className="font-semibold text-gray-800">{new Date(b.checkOutDate).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            <div>
+                              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Occupants</span>
+                              <span className="font-semibold text-gray-800">{b.occupants} Person(s)</span>
+                            </div>
+                          </div>
+
+                          {b.message && (
+                            <div className="bg-gray-50 p-3 rounded-xl text-xs">
+                              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Special message request</span>
+                              <p className="text-gray-600 italic">"{b.message}"</p>
+                            </div>
+                          )}
+
+                          {b.status === 'Rejected' && (
+                            <div className="bg-red-50/40 border border-red-100 p-3 rounded-xl text-xs text-red-800">
+                              <span className="block text-[9px] font-bold text-red-600 uppercase tracking-wider mb-0.5 font-sans">Rejection Reason</span>
+                              <p className="italic">"{b.rejectionReason}"</p>
+                            </div>
+                          )}
+
+                          {b.status === 'Cancelled' && (
+                            <div className="bg-red-50/40 border border-red-100 p-3 rounded-xl text-xs text-red-800">
+                              <span className="block text-[9px] font-bold text-red-600 uppercase tracking-wider mb-0.5 font-sans">Cancellation Details</span>
+                              <p className="font-semibold text-gray-950">Cancelled by: {b.cancelledBy || 'Tenant'}</p>
+                              <p className="italic mt-0.5">Reason: "{b.cancellationReason}"</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tenant Contacts */}
+                        <div className="bg-emerald-50/10 border border-emerald-500/5 p-3.5 rounded-xl text-xs space-y-2">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Tenant Details</p>
+                          <div className="font-bold text-gray-900">{b.tenantName}</div>
+                          <div className="flex items-center gap-1.5 text-gray-600">
+                            <Phone size={12} className="text-emerald-600" />
+                            <span>{b.tenantPhone}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gray-600">
+                            <Mail size={12} className="text-emerald-600" />
+                            <span className="truncate" title={b.tenantEmail}>{b.tenantEmail}</span>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* Booking Action decisions panel */}
+                      <div className="flex flex-wrap items-center justify-end gap-2 pt-3 mt-3 border-t border-gray-50">
+                        {b.status === 'Pending' && (
+                          <>
+                            <button
+                              onClick={() => handleAcceptBooking(b._id)}
+                              className="text-[10px] font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 px-4 rounded-lg cursor-pointer shadow-sm transition-colors"
+                            >
+                              Accept Booking
+                            </button>
+                            <button
+                              onClick={() => { setRejectionId(b._id); setRejectReasonInput(''); }}
+                              className="text-[10px] font-black uppercase tracking-wider bg-red-50 hover:bg-red-100 text-red-700 py-1.5 px-4 rounded-lg cursor-pointer transition-colors"
+                            >
+                              Reject Request
+                            </button>
+                          </>
+                        )}
+
+                        {b.status === 'Confirmed' && (
+                          <>
+                            <button
+                              onClick={() => handleMarkBookingCompleted(b._id)}
+                              className="text-[10px] font-black uppercase tracking-wider bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 px-4 rounded-lg cursor-pointer shadow-sm transition-colors"
+                            >
+                              Mark Stay Completed
+                            </button>
+                            <button
+                              onClick={() => { setCancellingId(b._id); setCancelReasonInput(''); }}
+                              className="text-[10px] font-black uppercase tracking-wider bg-red-50 hover:bg-red-100 text-red-700 py-1.5 px-4 rounded-lg cursor-pointer transition-colors"
+                            >
+                              Cancel Booking
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Inline forms for rejection reasons */}
+                      {rejectionId === b._id && (
+                        <div className="mt-4 p-4 border border-red-150 bg-red-50/10 rounded-xl space-y-3">
+                          <h4 className="text-xs font-black text-red-950 flex items-center gap-1">
+                            <AlertTriangle size={14} className="text-red-600" /> State Rejection Reason
+                          </h4>
+                          <p className="text-[11px] text-gray-500">Provide feedback to the tenant about why their booking cannot be fulfilled.</p>
+                          <input
+                            type="text"
+                            value={rejectReasonInput}
+                            onChange={(e) => setRejectReasonInput(e.target.value)}
+                            placeholder="e.g. Room is currently undergoing maintenance/painting..."
+                            className="w-full text-xs p-2.5 rounded-lg border border-red-200 focus:outline-none focus:border-red-500 bg-white"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => { setRejectionId(null); setRejectReasonInput(''); }}
+                              className="text-[10px] font-bold text-gray-500 hover:text-gray-700 py-1 px-2 cursor-pointer"
+                            >
+                              Close
+                            </button>
+                            <button
+                              disabled={submittingAction}
+                              onClick={() => handleRejectBooking(b._id)}
+                              className="text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-lg cursor-pointer disabled:opacity-50"
+                            >
+                              {submittingAction ? 'Rejecting...' : 'Reject Booking Now'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Inline forms for cancel reasons */}
+                      {cancellingId === b._id && (
+                        <div className="mt-4 p-4 border border-red-150 bg-red-50/10 rounded-xl space-y-3">
+                          <h4 className="text-xs font-black text-red-950 flex items-center gap-1">
+                            <AlertTriangle size={14} className="text-red-600" /> Cancel Confirmed Booking
+                          </h4>
+                          <p className="text-[11px] text-gray-500">Please provide a reason why you must cancel this confirmed booking reservation.</p>
+                          <input
+                            type="text"
+                            value={cancelReasonInput}
+                            onChange={(e) => setCancelReasonInput(e.target.value)}
+                            placeholder="Reason for cancel..."
+                            className="w-full text-xs p-2.5 rounded-lg border border-red-200 focus:outline-none focus:border-red-500 bg-white"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => { setCancellingId(null); setCancelReasonInput(''); }}
+                              className="text-[10px] font-bold text-gray-500 hover:text-gray-700 py-1 px-2 cursor-pointer"
+                            >
+                              Close
+                            </button>
+                            <button
+                              disabled={submittingAction}
+                              onClick={() => handleCancelBookingByOwner(b._id)}
+                              className="text-[10px] font-bold bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-lg cursor-pointer disabled:opacity-50"
+                            >
+                              {submittingAction ? 'Cancelling...' : 'Confirm Cancel Booking'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Owner Notifications Alert Sidebar (1 column) */}
+          <section className="lg:col-span-1">
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-extrabold text-gray-900 text-sm flex items-center gap-2">
+                  <Bell size={16} className="text-emerald-600" /> Activity Alerts 
+                  {notifications.filter(n => !n.isRead).length > 0 && (
+                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                      {notifications.filter(n => !n.isRead).length}
+                    </span>
+                  )}
+                </h2>
+                {notifications.some(n => !n.isRead) && (
+                  <button 
+                    onClick={handleMarkAllRead}
+                    className="text-[9px] font-black text-emerald-600 hover:underline cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              {loadingNotifications ? (
+                <div className="space-y-2">
+                  <div className="h-10 bg-gray-50 rounded-lg animate-pulse"></div>
+                </div>
+              ) : notifications.length === 0 ? (
+                <p className="text-[10px] text-gray-400 italic text-center py-4">No recent activity alerts.</p>
+              ) : (
+                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1" id="owner-notifications">
+                  {notifications.map((n) => (
+                    <div 
+                      key={n._id}
+                      className={`p-2.5 rounded-xl text-[11px] border transition-all ${
+                        n.isRead ? 'bg-white border-gray-50 text-gray-405' : 'bg-emerald-50/20 border-emerald-100 text-gray-800'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-1">
+                        <span className="font-bold text-[11px] text-gray-900 leading-tight">{n.title}</span>
+                        {!n.isRead && (
+                          <button 
+                            onClick={() => handleMarkRead(n._id)}
+                            className="text-emerald-600 hover:text-emerald-800 shrink-0 cursor-pointer"
+                            title="Mark read"
+                          >
+                            <Check size={11} />
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-0.5 leading-relaxed text-gray-600">{n.message}</p>
+                      <span className="text-[9px] text-gray-400 block mt-1">{new Date(n.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+        </div>
       )}
 
       {/* Modern custom confirmation modal to bypass iframe window.confirm limitations */}

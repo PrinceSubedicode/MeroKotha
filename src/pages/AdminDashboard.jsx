@@ -1,11 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext.jsx';
 import { Shield, Users, Home, Mail, FileText, CheckCircle2, XCircle, Trash2, AlertTriangle, RefreshCw, BarChart2, Check, X, ExternalLink } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+
+  const [adminUser, setAdminUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('admin_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    showToast({
+      type: 'success',
+      title: 'Session Terminated',
+      message: 'Logged out of administrator panel.'
+    });
+    navigate('/admin', { replace: true });
+  };
   
   // Tab screens: 'properties', 'users', 'stats'
   const [activeTab, setActiveTab] = useState('properties');
@@ -13,6 +34,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [adminBookings, setAdminBookings] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,16 +50,18 @@ export default function AdminDashboard() {
     setLoading(true);
     setError(null);
     try {
-      // Async gather stats, users, and properties from admin API endpoints
-      const [statsRes, usersRes, propsRes] = await Promise.all([
+      // Async gather stats, users, properties, and bookings from admin API endpoints
+      const [statsRes, usersRes, propsRes, bookingsRes] = await Promise.all([
         api.get('/admin/stats'),
         api.get('/admin/users'),
-        api.get('/admin/properties')
+        api.get('/admin/properties'),
+        api.get('/admin/bookings')
       ]);
 
       setStats(statsRes.data.stats);
       setUsers(usersRes.data);
       setProperties(propsRes.data);
+      setAdminBookings(bookingsRes.data);
     } catch (err) {
       console.error('Failed fetching admin datasets:', err);
       setError('Failed to sync administrative platform datasets. Confirm system privileges.');
@@ -69,10 +93,10 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (user && user.role === 'Admin') {
+    if (adminUser && adminUser.role === 'Admin') {
       loadAdminDataset();
     }
-  }, [user]);
+  }, [adminUser]);
 
   // Approve / Reject status changes
   const handleModifyPropertyApproval = async (propertyId, newStatus) => {
@@ -107,7 +131,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!user || user.role !== 'Admin') {
+  if (!adminUser || adminUser.role !== 'Admin') {
     return (
       <div className="mx-auto max-w-xl py-16 text-center">
         <AlertTriangle size={36} className="text-red-500 mx-auto mb-3" />
@@ -133,12 +157,20 @@ export default function AdminDashboard() {
             Analyze platform analytics, inspect and verify owner credentials, and approve or purge room listings for Nepal.
           </p>
         </div>
-        <button 
-          onClick={loadAdminDataset}
-          className="rounded-xl border border-gray-700 hover:bg-gray-800 text-white py-2 px-4 text-xs font-bold flex items-center gap-1.5"
-        >
-          <RefreshCw size={12} /> Sync Datasets
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button 
+            onClick={loadAdminDataset}
+            className="rounded-xl border border-gray-700 hover:bg-gray-800 text-white py-2 px-4 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            <RefreshCw size={12} /> Sync Datasets
+          </button>
+          <button 
+            onClick={handleAdminLogout}
+            className="rounded-xl bg-red-600 hover:bg-red-700 text-white py-2 px-4 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            Log Out
+          </button>
+        </div>
       </section>
 
       {error ? (
@@ -155,7 +187,7 @@ export default function AdminDashboard() {
           
           {/* Section 1: Dashboard Statistics Counts */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4" id="admin-stats-cards">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" id="admin-stats-cards">
               {/* Total Users */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center gap-4">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 font-bold">
@@ -189,6 +221,17 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Total Booking Reservations */}
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center gap-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600 font-bold">
+                  <BarChart2 size={20} />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Reservations</p>
+                  <p className="text-lg font-black text-rose-600 mt-0.5">{stats.totalBookings || 0}</p>
+                </div>
+              </div>
+
               {/* Total Inquiries */}
               <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center gap-4">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-600 font-bold">
@@ -203,22 +246,30 @@ export default function AdminDashboard() {
           )}
 
           {/* Section 2: Page Navigation Tabs */}
-          <div className="flex border-b border-gray-150" id="admin-tab-controls">
+          <div className="flex border-b border-gray-150 flex-wrap" id="admin-tab-controls">
             <button
               onClick={() => setActiveTab('properties')}
-              className={`py-3 px-5 text-xs font-black uppercase tracking-wider border-b-2 transition-all ${
-                activeTab === 'properties' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-400'
+              className={`py-3 px-5 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                activeTab === 'properties' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-400 hover:text-emerald-600'
               }`}
             >
               Approval Queue ({properties.length})
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`py-3 px-5 text-xs font-black uppercase tracking-wider border-b-2 transition-all ${
-                activeTab === 'users' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-400'
+              className={`py-3 px-5 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                activeTab === 'users' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-400 hover:text-emerald-600'
               }`}
             >
               System User Directory ({users.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`py-3 px-5 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                activeTab === 'bookings' ? 'border-emerald-600 text-emerald-700 font-extrabold' : 'border-transparent text-gray-400 hover:text-emerald-600'
+              }`}
+            >
+              Reservations Audit ({adminBookings.length})
             </button>
           </div>
 
@@ -368,6 +419,83 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {/* TAB AREA: Reservations Auditing desk */}
+          {activeTab === 'bookings' && (
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+              <h2 className="font-extrabold text-gray-900 border-b border-gray-50 pb-4 mb-4">Platform Reservations Registry</h2>
+              
+              {adminBookings.length === 0 ? (
+                <div className="text-center py-12 text-gray-400 font-bold text-xs">
+                  No reservations are registered on the platform.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs" id="admin-bookings-table">
+                    <thead>
+                      <tr className="border-b border-gray-150 text-gray-400 font-bold uppercase tracking-wider">
+                        <th className="py-3 px-4">Property</th>
+                        <th className="py-3 px-4">Landlord</th>
+                        <th className="py-3 px-4">Tenant</th>
+                        <th className="py-3 px-4">Timeline / Occupants</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 font-medium text-gray-700">
+                      {adminBookings.map((b) => (
+                        <tr key={b._id} className="hover:bg-gray-50/50">
+                          {/* Property info */}
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <img src={b.propertyImage} alt="" className="h-8 w-10 object-cover rounded-lg border bg-gray-50 shrink-0" referrerPolicy="no-referrer" />
+                              <div>
+                                <span className="font-bold text-gray-900 block leading-tight">{b.propertyTitle}</span>
+                                <span className="text-[10px] text-gray-400">ID: {b._id}</span>
+                              </div>
+                            </div>
+                          </td>
+                          {/* Landlord details */}
+                          <td className="py-4 px-4">
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-gray-800 block">{b.ownerName || 'Host'}</span>
+                              <span className="text-[10px] text-gray-500 block">{b.ownerEmail}</span>
+                            </div>
+                          </td>
+                          {/* Tenant details */}
+                          <td className="py-4 px-4">
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-gray-800 block">{b.tenantName}</span>
+                              <span className="text-[10px] text-gray-500 block">{b.tenantEmail}</span>
+                            </div>
+                          </td>
+                          {/* Timeline details */}
+                          <td className="py-4 px-4">
+                            <div className="space-y-0.5 text-[10px] text-gray-650 text-gray-600">
+                              <div><strong className="text-gray-800">Move-In:</strong> {new Date(b.moveInDate || b.checkInDate).toLocaleDateString()}</div>
+                              {b.checkOutDate && <div><strong className="text-gray-800">Check-Out:</strong> {new Date(b.checkOutDate).toLocaleDateString()}</div>}
+                              <div><strong className="text-gray-800">Occupants:</strong> {b.occupants} Person(s)</div>
+                            </div>
+                          </td>
+                          {/* Status */}
+                          <td className="py-4 px-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border inline-block ${
+                              b.status === 'Confirmed' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                              b.status === 'Rejected' ? 'bg-red-50 border-red-100 text-red-700' :
+                              b.status === 'Cancelled' ? 'bg-gray-50 border-gray-150 text-gray-500' :
+                              b.status === 'Completed' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
+                              'bg-amber-50 border-amber-100 text-amber-700'
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

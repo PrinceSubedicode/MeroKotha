@@ -13,10 +13,12 @@ router.get('/stats', async (req, res) => {
     const usersColl = db.collection('users');
     const propertiesColl = db.collection('properties');
     const inquiriesColl = db.collection('inquiries');
+    const bookingsColl = db.collection('bookings');
 
     const totalUsers = await usersColl.count();
     const totalProperties = await propertiesColl.count();
     const totalInquiries = await inquiriesColl.count();
+    const totalBookings = await bookingsColl.count();
 
     // Specific counts
     const pendingProperties = await propertiesColl.count({ status: 'Pending' });
@@ -27,11 +29,18 @@ router.get('/stats', async (req, res) => {
     const ownersCount = await usersColl.count({ role: 'Property Owner' });
     const adminsCount = await usersColl.count({ role: 'Admin' });
 
+    const pendingBookings = await bookingsColl.count({ status: 'Pending' });
+    const confirmedBookings = await bookingsColl.count({ status: 'Confirmed' });
+    const rejectedBookings = await bookingsColl.count({ status: 'Rejected' });
+    const cancelledBookings = await bookingsColl.count({ status: 'Cancelled' });
+    const completedBookings = await bookingsColl.count({ status: 'Completed' });
+
     res.json({
       stats: {
         totalUsers,
         totalProperties,
         totalInquiries,
+        totalBookings,
         properties: {
           pending: pendingProperties,
           approved: approvedProperties,
@@ -41,12 +50,33 @@ router.get('/stats', async (req, res) => {
           tenants: tenantsCount,
           owners: ownersCount,
           admins: adminsCount
+        },
+        bookings: {
+          pending: pendingBookings,
+          confirmed: confirmedBookings,
+          rejected: rejectedBookings,
+          cancelled: cancelledBookings,
+          completed: completedBookings
         }
       }
     });
 
   } catch (error) {
     console.error('Error fetching admin statistics:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// GET /api/admin/bookings: Retrieve all platform bookings
+router.get('/bookings', async (req, res) => {
+  try {
+    const bookingsColl = db.collection('bookings');
+    const bookings = await bookingsColl.find({});
+    // Sort by newest first
+    bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(bookings);
+  } catch (error) {
+    console.error('Error fetching admin bookings list:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });

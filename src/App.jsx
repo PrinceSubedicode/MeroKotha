@@ -17,6 +17,8 @@ import Contact from './pages/Contact.jsx';
 import TenantDashboard from './pages/TenantDashboard.jsx';
 import OwnerDashboard from './pages/OwnerDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
+import AdminProtectedRoute from './components/AdminProtectedRoute.jsx';
 
 export default function App() {
   return (
@@ -69,11 +71,16 @@ export default function App() {
                 />
 
                 <Route 
+                  path="/admin" 
+                  element={<AdminLogin />} 
+                />
+
+                <Route 
                   path="/admin-dashboard" 
                   element={
-                    <ProtectedRoute allowedRoles={['Admin']}>
+                    <AdminProtectedRoute>
                       <AdminDashboard />
-                    </ProtectedRoute>
+                    </AdminProtectedRoute>
                   } 
                 />
 

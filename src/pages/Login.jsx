@@ -135,17 +135,7 @@ export default function Login() {
           <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
             Quick Test Accounts (Click to Autofill)
           </p>
-          <div className="grid grid-cols-3 gap-2">
-            <button 
-              type="button"
-              onClick={() => {
-                setEmail('admin@merokotha.com');
-                setPassword('admin123');
-              }}
-              className="px-2 py-2 text-[10px] font-bold bg-slate-900 border border-slate-800 text-white rounded-xl hover:bg-slate-850 active:scale-95 transition-all text-center cursor-pointer"
-            >
-              Admin Dashboard
-            </button>
+          <div className="grid grid-cols-2 gap-2">
             <button 
               type="button"
               onClick={() => {

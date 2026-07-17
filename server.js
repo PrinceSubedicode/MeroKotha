@@ -8,6 +8,8 @@ import authRoutes from './server/routes/auth.js';
 import propertyRoutes from './server/routes/properties.js';
 import inquiryRoutes from './server/routes/inquiries.js';
 import adminRoutes from './server/routes/admin.js';
+import bookingRoutes from './server/routes/bookings.js';
+import notificationRoutes from './server/routes/notifications.js';
 
 async function startServer() {
   const app = express();
@@ -32,6 +34,8 @@ async function startServer() {
   app.use('/api/properties', propertyRoutes);
   app.use('/api/inquiries', inquiryRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/bookings', bookingRoutes);
+  app.use('/api/notifications', notificationRoutes);
 
   // Healthcheck
   app.get('/api/health', (req, res) => {

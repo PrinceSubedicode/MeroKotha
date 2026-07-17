@@ -230,7 +230,7 @@ export default function Profile() {
     }
 
     // Include verification details if documents have been chosen and editing is allowed
-    const isEditingVerification = !user.verificationStatus || user.verificationStatus === 'Not Submitted' || user.verificationStatus === 'Rejected';
+    const isEditingVerification = user.role !== 'Admin' && (!user.verificationStatus || user.verificationStatus === 'Not Submitted' || user.verificationStatus === 'Rejected');
     if (isEditingVerification && frontSide) {
       payload.documentType = docType;
       payload.documentNumber = docNumber;
@@ -271,7 +271,7 @@ export default function Profile() {
         </div>
 
         {/* Completeness & Verification Banners */}
-        {user?.verificationStatus === 'Under Review' && (
+        {user?.role !== 'Admin' && user?.verificationStatus === 'Under Review' && (
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-8 transition-all" id="review-banner">
             <div className="flex items-start gap-3">
               <Clock className="text-blue-500 shrink-0 mt-0.5 animate-pulse" size={20} />
@@ -298,7 +298,7 @@ export default function Profile() {
           </div>
         )}
 
-        {user?.verificationStatus === 'Rejected' && (
+        {user?.role !== 'Admin' && user?.verificationStatus === 'Rejected' && (
           <div className="bg-red-50 border border-red-100 rounded-2xl p-5 mb-8 transition-all" id="rejected-banner">
             <div className="flex items-start gap-3">
               <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={20} />
@@ -330,7 +330,7 @@ export default function Profile() {
           </div>
         )}
 
-        {(!user?.verificationStatus || user?.verificationStatus === 'Not Submitted') && !isComplete && (
+        {user?.role !== 'Admin' && (!user?.verificationStatus || user?.verificationStatus === 'Not Submitted') && !isComplete && (
           <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 mb-8 transition-all" id="incomplete-banner">
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
@@ -386,7 +386,7 @@ export default function Profile() {
           </div>
         )}
 
-        {isComplete && (
+        {user?.role !== 'Admin' && isComplete && (
           <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 mb-8 transition-all" id="complete-banner">
             <div className="flex items-start gap-3">
               <CheckCircle className="text-emerald-500 shrink-0 mt-0.5" size={20} />
@@ -587,7 +587,8 @@ export default function Profile() {
             </div>
 
             {/* Identity Document Verification Section */}
-            <div className="sm:col-span-2 border-t border-gray-100 pt-6 mt-2">
+            {user?.role !== 'Admin' && (
+              <div className="sm:col-span-2 border-t border-gray-100 pt-6 mt-2">
               <h3 className="text-sm font-extrabold text-gray-800 mb-4 flex items-center gap-1.5">
                 <Shield size={16} className="text-emerald-600" /> Identity Document Verification
               </h3>
@@ -949,7 +950,8 @@ export default function Profile() {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* User role Tag */}

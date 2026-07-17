@@ -140,6 +140,10 @@ router.get('/:id', async (req, res) => {
     const usersColl = db.collection('users');
     const owner = await usersColl.findById(property.owner);
 
+    // Resolve Confirmed Bookings for availability checking
+    const bookingsColl = db.collection('bookings');
+    const confirmedBookings = await bookingsColl.find({ propertyId: property._id, status: 'Confirmed' });
+
     res.json({
       ...property,
       ownerInfo: owner ? {
@@ -149,7 +153,8 @@ router.get('/:id', async (req, res) => {
         phone: owner.phone,
         isVerified: owner.isVerified,
         photo: owner.photo || null
-      } : null
+      } : null,
+      confirmedBookings: confirmedBookings || []
     });
   } catch (error) {
     console.error('Error fetching property details:', error);

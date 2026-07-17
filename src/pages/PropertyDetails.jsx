@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { MapPin, Phone, Mail, User, ShieldCheck, CheckSquare, Calendar, ChevronLeft, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, User, ShieldCheck, CheckSquare, Calendar, ChevronLeft, Send, Sparkles, AlertCircle, CalendarRange, Users } from 'lucide-react';
 import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 
@@ -20,6 +20,16 @@ export default function PropertyDetails() {
   const [submittingInquiry, setSubmittingInquiry] = useState(false);
   const [inquirySuccess, setInquirySuccess] = useState(false);
   const [inquiryError, setInquiryError] = useState(null);
+
+  // Booking fields
+  const [deskTab, setDeskTab] = useState('inquiry'); // 'inquiry' or 'booking'
+  const [bookingCheckIn, setBookingCheckIn] = useState('');
+  const [bookingCheckOut, setBookingCheckOut] = useState('');
+  const [bookingOccupants, setBookingOccupants] = useState('1');
+  const [bookingMsg, setBookingMsg] = useState('');
+  const [submittingBooking, setSubmittingBooking] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
 
   // Active slideshow index
   const [activeImgIndex, setActiveImgIndex] = useState(0);
@@ -54,6 +64,28 @@ export default function PropertyDetails() {
       setInquiryError(err.response?.data?.message || 'Failed to dispatch inquiry. Please try again.');
     } finally {
       setSubmittingInquiry(false);
+    }
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    setSubmittingBooking(true);
+    setBookingError(null);
+    try {
+      await api.post('/bookings', {
+        propertyId: property._id,
+        checkInDate: bookingCheckIn,
+        moveInDate: bookingCheckIn,
+        checkOutDate: bookingCheckOut || undefined,
+        occupants: Number(bookingOccupants),
+        message: bookingMsg
+      });
+      setBookingSuccess(true);
+    } catch (err) {
+      console.error('Booking submission error:', err);
+      setBookingError(err.response?.data?.message || 'Failed to submit booking. Please verify dates.');
+    } finally {
+      setSubmittingBooking(false);
     }
   };
 
@@ -142,6 +174,23 @@ export default function PropertyDetails() {
                 <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider">
                   {property.propertyType} Verified
                 </span>
+                {property.confirmedBookings && property.confirmedBookings.some(cb => {
+                  const start = new Date(cb.moveInDate || cb.checkInDate);
+                  const end = cb.checkOutDate ? new Date(cb.checkOutDate) : null;
+                  const today = new Date();
+                  today.setHours(0,0,0,0);
+                  start.setHours(0,0,0,0);
+                  if (end) end.setHours(0,0,0,0);
+                  return today >= start && (!end || today <= end);
+                }) ? (
+                  <span className="bg-red-100 text-red-800 text-xs font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider">
+                    Booked / Unavailable
+                  </span>
+                ) : (
+                  <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider">
+                    Available
+                  </span>
+                )}
                 <span className="flex items-center gap-1 text-[11px] font-bold text-gray-500">
                   <Calendar size={13} /> Listed {new Date(property.createdAt).toLocaleDateString()}
                 </span>
@@ -299,57 +348,176 @@ export default function PropertyDetails() {
               </div>
             ) : user.role === 'Tenant' ? (
               
-              /* Inquiry form exclusively for Tenant users */
+              /* Inquiry / Booking Action Desk for Tenants */
               <div className="space-y-4">
                 
-                {inquirySuccess ? (
-                  <div className="bg-emerald-50 border border-emerald-150 rounded-xl p-5 text-center">
-                    <Sparkles size={32} className="text-emerald-600 mx-auto mb-3" />
-                    <h4 className="font-bold text-emerald-950 text-sm">Inquiry Sent Successfully!</h4>
-                    <p className="text-xs text-emerald-800/90 mt-1 lines-relaxed leading-relaxed">
-                      Your interest was dispatched to <strong>{property.ownerInfo?.name || 'Owner'}</strong>. They will verify your credentials and reach you at <strong>{user.phone}</strong>.
-                    </p>
-                    <Link 
-                      to="/tenant-dashboard"
-                      className="mt-4 inline-block text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 py-2 px-4 rounded-lg shadow-sm"
-                    >
-                      View My Inquiries
-                    </Link>
-                  </div>
-                ) : (
-                  <form onSubmit={handleInquirySubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-                        Send Inquiry Message
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={inquiryMsg}
-                        onChange={(e) => setInquiryMsg(e.target.value)}
-                        placeholder="Write something about yourself and when you plan to visit the property..."
-                        className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
-                        required
-                        id="inquiry-message-textarea"
-                      />
+                {/* Desk tab toggles */}
+                <div className="flex border-b border-gray-150" id="desk-tab-controls">
+                  <button
+                    type="button"
+                    onClick={() => setDeskTab('inquiry')}
+                    className={`flex-1 py-2 text-center text-xs font-extrabold border-b-2 transition-all cursor-pointer ${
+                      deskTab === 'inquiry' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    Ask Question
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeskTab('booking')}
+                    className={`flex-1 py-2 text-center text-xs font-extrabold border-b-2 transition-all cursor-pointer ${
+                      deskTab === 'booking' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    Book Vacancy
+                  </button>
+                </div>
+
+                {deskTab === 'inquiry' ? (
+                  inquirySuccess ? (
+                    <div className="bg-emerald-50 border border-emerald-150 rounded-xl p-5 text-center">
+                      <Sparkles size={32} className="text-emerald-600 mx-auto mb-3" />
+                      <h4 className="font-bold text-emerald-950 text-sm">Inquiry Sent Successfully!</h4>
+                      <p className="text-xs text-emerald-800/90 mt-1 lines-relaxed leading-relaxed">
+                        Your interest was dispatched to <strong>{property.ownerInfo?.name || 'Owner'}</strong>. They will verify your credentials and reach you at <strong>{user.phone}</strong>.
+                      </p>
+                      <Link 
+                        to="/tenant-dashboard"
+                        className="mt-4 inline-block text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 py-2 px-4 rounded-lg shadow-sm"
+                      >
+                        View My Inquiries
+                      </Link>
                     </div>
+                  ) : (
+                    <form onSubmit={handleInquirySubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Send Inquiry Message
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={inquiryMsg}
+                          onChange={(e) => setInquiryMsg(e.target.value)}
+                          placeholder="Write something about yourself and when you plan to visit the property..."
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                          required
+                          id="inquiry-message-textarea"
+                        />
+                      </div>
 
-                    {inquiryError && (
-                      <p className="text-xs font-bold text-red-600 bg-red-50 p-2 rounded-lg">{inquiryError}</p>
-                    )}
+                      {inquiryError && (
+                        <p className="text-xs font-bold text-red-600 bg-red-50 p-2 rounded-lg">{inquiryError}</p>
+                      )}
 
-                    <button
-                      type="submit"
-                      disabled={submittingInquiry}
-                      className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-md shadow-emerald-700/10 transition-all disabled:opacity-50"
-                      id="submit-inquiry-btn"
-                    >
-                      <Send size={14} /> {submittingInquiry ? 'Sending...' : 'Send Rental Inquiry'}
-                    </button>
-                    
-                    <p className="text-[10px] text-gray-400 text-center leading-relaxed">
-                      MeroKotha generates a safe communication channel. The landlord is notified instantly. No commissions!
-                    </p>
-                  </form>
+                      <button
+                        type="submit"
+                        disabled={submittingInquiry}
+                        className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-md shadow-emerald-700/10 transition-all disabled:opacity-50 cursor-pointer"
+                        id="submit-inquiry-btn"
+                      >
+                        <Send size={14} /> {submittingInquiry ? 'Sending...' : 'Send Rental Inquiry'}
+                      </button>
+                      
+                      <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+                        MeroKotha generates a safe communication channel. The landlord is notified instantly. No commissions!
+                      </p>
+                    </form>
+                  )
+                ) : (
+                  /* Booking tab content */
+                  bookingSuccess ? (
+                    <div className="bg-emerald-50 border border-emerald-150 rounded-xl p-5 text-center">
+                      <CheckSquare size={32} className="text-emerald-600 mx-auto mb-3" />
+                      <h4 className="font-bold text-emerald-950 text-sm">Booking Request Placed!</h4>
+                      <p className="text-xs text-emerald-800/90 mt-1 lines-relaxed leading-relaxed">
+                        Your booking request was successfully dispatched to <strong>{property.ownerInfo?.name || 'Owner'}</strong>. You can monitor its status from your dashboard.
+                      </p>
+                      <Link 
+                        to="/tenant-dashboard"
+                        className="mt-4 inline-block text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 py-2 px-4 rounded-lg shadow-sm"
+                      >
+                        Go to My Bookings
+                      </Link>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleBookingSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Move-in / Check-in Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingCheckIn}
+                          onChange={(e) => setBookingCheckIn(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                          required
+                          id="booking-checkin-date"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Check-out Date (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingCheckOut}
+                          onChange={(e) => setBookingCheckOut(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                          id="booking-checkout-date"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Number of Occupants *
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={bookingOccupants}
+                          onChange={(e) => setBookingOccupants(e.target.value)}
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                          required
+                          id="booking-occupants"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+                          Message / Special Requests
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={bookingMsg}
+                          onChange={(e) => setBookingMsg(e.target.value)}
+                          placeholder="Any questions or special requests for the landlord..."
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                          id="booking-message"
+                        />
+                      </div>
+
+                      {bookingError && (
+                        <div className="p-2.5 rounded-lg bg-red-50 border border-red-100 text-red-700 text-xs font-semibold flex items-center gap-1.5">
+                          <AlertCircle size={14} className="shrink-0" />
+                          <span>{bookingError}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={submittingBooking}
+                        className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 py-3 text-xs font-bold text-white shadow-md shadow-emerald-700/10 transition-all disabled:opacity-50 cursor-pointer"
+                        id="submit-booking-btn"
+                      >
+                        <CalendarRange size={14} /> {submittingBooking ? 'Submitting...' : 'Confirm & Book Now'}
+                      </button>
+
+                      <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+                        Booking requests secure the property slot. Double bookings are automatically prevented upon confirmation.
+                      </p>
+                    </form>
+                  )
                 )}
 
               </div>
