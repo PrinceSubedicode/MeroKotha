@@ -7,6 +7,12 @@ import { Mail, Phone, Bookmark, Calendar, Inbox, ClipboardList, ArrowRight, Exte
 export default function TenantDashboard() {
   const { user, favorites, toggleFavorite } = useAuth();
   
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Continuous / N/A';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'Continuous / N/A' : d.toLocaleDateString();
+  };
+  
   const [inquiries, setInquiries] = useState([]);
   const [savedProperties, setSavedProperties] = useState([]);
   const [activeTab, setActiveTab] = useState('inquiries'); // 'inquiries' or 'bookings'
@@ -247,7 +253,7 @@ export default function TenantDashboard() {
                               {inq.propertyTitle} <ExternalLink size={12} className="shrink-0 text-gray-405" />
                             </Link>
                             <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                              <Calendar size={11} /> Dispatched {new Date(inq.createdAt).toLocaleDateString()}
+                              <Calendar size={11} /> Dispatched {formatDate(inq.createdAt)}
                             </p>
                           </div>
 
@@ -350,7 +356,7 @@ export default function TenantDashboard() {
                                 {b.propertyTitle} <ExternalLink size={12} className="shrink-0 text-gray-405" />
                               </Link>
                               <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                                <Calendar size={11} /> Placed on {new Date(b.createdAt).toLocaleDateString()}
+                                <Calendar size={11} /> Placed on {formatDate(b.createdAt)}
                               </p>
                             </div>
                           </div>
@@ -370,12 +376,12 @@ export default function TenantDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs bg-gray-50 p-3 rounded-xl">
                             <div>
                               <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Move-In Date</span>
-                              <span className="font-semibold text-gray-800">{new Date(b.moveInDate || b.checkInDate).toLocaleDateString()}</span>
+                              <span className="font-semibold text-gray-800">{formatDate(b.moveInDate || b.checkInDate)}</span>
                             </div>
                             {b.checkOutDate && (
                               <div>
                                 <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-Out Date</span>
-                                <span className="font-semibold text-gray-800">{new Date(b.checkOutDate).toLocaleDateString()}</span>
+                                <span className="font-semibold text-gray-800">{formatDate(b.checkOutDate)}</span>
                               </div>
                             )}
                             <div>

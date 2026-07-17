@@ -9,6 +9,23 @@ import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 export default function OwnerDashboard() {
   const { user } = useAuth();
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Continuous / N/A';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'Continuous / N/A' : d.toLocaleDateString();
+  };
+
+  const handleUpdatePropertyStatus = async (propertyId, newStatus) => {
+    try {
+      await api.put(`/properties/${propertyId}/status`, { status: newStatus });
+      loadListings();
+      loadBookings();
+    } catch (err) {
+      console.error('Failed to update property status:', err);
+      alert(err.response?.data?.message || 'Failed to update property status.');
+    }
+  };
+
   // Active Screen view: 'listings', 'add', 'edit', 'inquiries'
   const [activeTab, setActiveTab] = useState('listings');
 
@@ -121,6 +138,7 @@ export default function OwnerDashboard() {
     try {
       await api.put(`/bookings/${bookingId}/status`, { status: 'Confirmed' });
       loadBookings();
+      loadListings();
       loadNotifications();
     } catch (err) {
       console.error('Failed to accept booking:', err);
@@ -138,6 +156,7 @@ export default function OwnerDashboard() {
       setRejectionId(null);
       setRejectReasonInput('');
       loadBookings();
+      loadListings();
       loadNotifications();
     } catch (err) {
       console.error('Failed to reject booking:', err);
@@ -157,6 +176,7 @@ export default function OwnerDashboard() {
       setCancellingId(null);
       setCancelReasonInput('');
       loadBookings();
+      loadListings();
       loadNotifications();
     } catch (err) {
       console.error('Failed to cancel booking:', err);
@@ -170,6 +190,7 @@ export default function OwnerDashboard() {
     try {
       await api.put(`/bookings/${bookingId}/status`, { status: 'Completed' });
       loadBookings();
+      loadListings();
       loadNotifications();
     } catch (err) {
       console.error('Failed to complete booking:', err);
@@ -450,10 +471,22 @@ export default function OwnerDashboard() {
                       <p className="text-xs text-gray-550 mt-1 text-gray-500">{prop.location}, {prop.city} &bull; <strong className="text-emerald-600">Rs. {Number(prop.rent).toLocaleString()}/m</strong></p>
                       
                       {/* State badge */}
-                      <div className="flex items-center gap-1.5 mt-2">
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
                         {prop.status === 'Approved' ? (
-                          <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-0.5">
-                            <CheckCircle2 size={11} className="text-emerald-600" /> Public Verified
+                          <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-0.5" title="Available for rent and visible on search & homepage">
+                            <CheckCircle2 size={11} className="text-emerald-600" /> Available
+                          </span>
+                        ) : prop.status === 'Occupied' ? (
+                          <span className="text-[9px] font-bold text-indigo-800 bg-indigo-100/70 border border-indigo-200 px-2 py-0.5 rounded-md flex items-center gap-0.5" title="Currently occupied by a tenant">
+                            <Check size={11} className="text-indigo-600" /> Occupied
+                          </span>
+                        ) : prop.status === 'Hidden' ? (
+                          <span className="text-[9px] font-bold text-gray-850 bg-gray-100 border border-gray-250 px-2 py-0.5 rounded-md flex items-center gap-0.5 text-gray-700" title="Hidden manually by you from public listings">
+                            <X size={11} className="text-gray-500" /> Hidden
+                          </span>
+                        ) : prop.status === 'Archived' ? (
+                          <span className="text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-0.5" title="Archived manually by you. Booking history is preserved">
+                            <AlertTriangle size={11} className="text-amber-500" /> Archived
                           </span>
                         ) : prop.status === 'Rejected' ? (
                           <span className="text-[9px] font-bold text-red-800 bg-red-50 border border-red-150 px-2 py-0.5 rounded-md flex items-center gap-0.5">
@@ -466,23 +499,104 @@ export default function OwnerDashboard() {
                         )}
                         <span className="text-[9px] font-semibold text-gray-400">({prop.bedrooms} BHK / {prop.propertyType})</span>
                       </div>
+
+                      {/* Occupant Detail block if Occupied */}
+                      {prop.status === 'Occupied' && (() => {
+                        const activeBooking = bookings.find(b => b.propertyId === prop._id && (b.status === 'Confirmed' || b.status === 'Completed'));
+                        if (!activeBooking) return null;
+                        return (
+                          <div className="mt-2.5 p-3 bg-indigo-50/40 rounded-xl border border-indigo-100 text-xs text-indigo-950 space-y-1 max-w-md">
+                            <p className="font-bold text-[9px] text-indigo-800 uppercase tracking-wider mb-1">Active Tenant & Stay Details</p>
+                            <p><strong>Tenant Name:</strong> {activeBooking.tenantName}</p>
+                            <p><strong>Contact:</strong> {activeBooking.tenantPhone} &bull; {activeBooking.tenantEmail}</p>
+                            <p><strong>Booking Placed On:</strong> {formatDate(activeBooking.createdAt)}</p>
+                            <p><strong>Move-In Date:</strong> {formatDate(activeBooking.moveInDate || activeBooking.checkInDate)}</p>
+                            <p><strong>Check-Out Date:</strong> {activeBooking.checkOutDate ? formatDate(activeBooking.checkOutDate) : 'Continuous Stay'}</p>
+                            <p className="flex items-center gap-1">
+                              <strong>Booking Status:</strong> 
+                              <span className="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded text-[9px] uppercase">{activeBooking.status}</span>
+                            </p>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
                   {/* Actions column */}
-                  <div className="flex gap-1.5 sm:self-center border-t border-gray-50 sm:border-0 pt-3 sm:pt-0 w-full sm:w-auto justify-end">
-                    <button
-                      onClick={() => handleStartEdit(prop)}
-                      className="flex items-center gap-1 text-[11px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-emerald-700 py-1.5 px-3 rounded-lg border border-gray-100 shadow-xs"
-                    >
-                      <Edit size={12} /> Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirmId(prop._id)}
-                      className="flex items-center gap-1 text-[11px] font-bold text-red-600 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-lg border border-red-100 cursor-pointer"
-                    >
-                      <Trash2 size={12} /> Delete
-                    </button>
+                  <div className="flex flex-col sm:items-end gap-2 sm:self-center border-t border-gray-50 sm:border-0 pt-3 sm:pt-0 w-full sm:w-auto">
+                    <div className="flex flex-wrap gap-1.5 justify-end">
+                      <button
+                        onClick={() => handleStartEdit(prop)}
+                        className="flex items-center gap-1 text-[11px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 hover:text-emerald-700 py-1.5 px-3 rounded-lg border border-gray-100 shadow-xs cursor-pointer"
+                      >
+                        <Edit size={12} /> Edit
+                      </button>
+
+                      {prop.status === 'Approved' && (
+                        <>
+                          <button
+                            onClick={() => handleUpdatePropertyStatus(prop._id, 'Hidden')}
+                            className="text-[11px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-150 py-1.5 px-2.5 rounded-lg border border-gray-200 cursor-pointer"
+                            title="Temporarily hide listing from public search and homepage"
+                          >
+                            Hide Listing
+                          </button>
+                          <button
+                            onClick={() => handleUpdatePropertyStatus(prop._id, 'Archived')}
+                            className="text-[11px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-150 py-1.5 px-2.5 rounded-lg border border-gray-200 cursor-pointer"
+                            title="Remove from public search but keep history"
+                          >
+                            Archive
+                          </button>
+                        </>
+                      )}
+
+                      {(prop.status === 'Hidden' || prop.status === 'Archived') && (
+                        <button
+                          onClick={() => handleUpdatePropertyStatus(prop._id, 'Approved')}
+                          className="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 py-1.5 px-2.5 rounded-lg cursor-pointer shadow-xs"
+                        >
+                          Mark as Available
+                        </button>
+                      )}
+
+                      {prop.status === 'Occupied' && (
+                        <button
+                          onClick={() => {
+                            // Find active booking to mark as completed
+                            const activeBooking = bookings.find(b => b.propertyId === prop._id && b.status === 'Confirmed');
+                            if (activeBooking) {
+                              handleMarkBookingCompleted(activeBooking._id);
+                            } else {
+                              // If no active booking found, reset property status to approved
+                              handleUpdatePropertyStatus(prop._id, 'Approved');
+                            }
+                          }}
+                          className="text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 py-1.5 px-2.5 rounded-lg cursor-pointer shadow-xs"
+                        >
+                          Tenant Checked Out
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          const hasActiveBookings = bookings.some(b => b.propertyId === prop._id && (b.status === 'Confirmed' || b.status === 'Pending'));
+                          if (hasActiveBookings) {
+                            alert('Cannot delete property listing with active or pending bookings.');
+                          } else {
+                            setDeleteConfirmId(prop._id);
+                          }
+                        }}
+                        className={`flex items-center gap-1 text-[11px] font-bold py-1.5 px-3 rounded-lg border cursor-pointer ${
+                          bookings.some(b => b.propertyId === prop._id && (b.status === 'Confirmed' || b.status === 'Pending'))
+                            ? 'text-gray-300 bg-gray-50 border-gray-150 cursor-not-allowed'
+                            : 'text-red-600 bg-red-50 hover:bg-red-100 border-red-100'
+                        }`}
+                        title={bookings.some(b => b.propertyId === prop._id && (b.status === 'Confirmed' || b.status === 'Pending')) ? "Active bookings prevent deletion" : "Delete Listing"}
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -1004,7 +1118,7 @@ export default function OwnerDashboard() {
                           <div>
                             <h4 className="text-[9px] text-gray-400 uppercase tracking-wider">Booked Property:</h4>
                             <h3 className="font-extrabold text-gray-900 text-sm">{b.propertyTitle}</h3>
-                            <p className="text-[10px] text-gray-500">Filed on {new Date(b.createdAt).toLocaleDateString()}</p>
+                            <p className="text-[10px] text-gray-500">Filed on {formatDate(b.createdAt)}</p>
                           </div>
                         </div>
 
@@ -1028,12 +1142,12 @@ export default function OwnerDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 text-xs bg-gray-50 p-3 rounded-xl">
                             <div>
                               <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Move-In Date</span>
-                              <span className="font-semibold text-gray-800">{new Date(b.moveInDate || b.checkInDate).toLocaleDateString()}</span>
+                              <span className="font-semibold text-gray-800">{formatDate(b.moveInDate || b.checkInDate)}</span>
                             </div>
                             {b.checkOutDate && (
                               <div>
                                 <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-Out Date</span>
-                                <span className="font-semibold text-gray-800">{new Date(b.checkOutDate).toLocaleDateString()}</span>
+                                <span className="font-semibold text-gray-800">{formatDate(b.checkOutDate)}</span>
                               </div>
                             )}
                             <div>

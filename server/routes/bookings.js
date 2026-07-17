@@ -281,6 +281,12 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
         updatedAt: new Date().toISOString()
       });
 
+      // Step 3: Automatically mark property as Occupied / unavailable
+      await propertiesColl.findByIdAndUpdate(booking.propertyId, {
+        status: 'Occupied',
+        isAvailable: false
+      });
+
       // Send Notification to Tenant
       await notificationsColl.create({
         userId: booking.tenantId,
@@ -347,6 +353,14 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
         updatedAt: new Date().toISOString()
       });
 
+      // If the cancelled booking was already confirmed, return the property to available
+      if (booking.status === 'Confirmed') {
+        await propertiesColl.findByIdAndUpdate(booking.propertyId, {
+          status: 'Approved',
+          isAvailable: true
+        });
+      }
+
       // Send Notifications
       if (isTenant) {
         // Notify owner
@@ -397,6 +411,12 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
       const updated = await bookingsColl.findByIdAndUpdate(req.params.id, { 
         status: 'Completed',
         updatedAt: new Date().toISOString()
+      });
+
+      // Automatically reset property status to Approved (Available)
+      await propertiesColl.findByIdAndUpdate(booking.propertyId, {
+        status: 'Approved',
+        isAvailable: true
       });
 
       // Notify Tenant and Owner

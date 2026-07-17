@@ -8,6 +8,12 @@ export default function AdminDashboard() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Continuous / N/A';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'Continuous / N/A' : d.toLocaleDateString();
+  };
+
   const [adminUser, setAdminUser] = useState(() => {
     try {
       const stored = localStorage.getItem('admin_user');
@@ -473,8 +479,8 @@ export default function AdminDashboard() {
                           {/* Timeline details */}
                           <td className="py-4 px-4">
                             <div className="space-y-0.5 text-[10px] text-gray-650 text-gray-600">
-                              <div><strong className="text-gray-800">Move-In:</strong> {new Date(b.moveInDate || b.checkInDate).toLocaleDateString()}</div>
-                              {b.checkOutDate && <div><strong className="text-gray-800">Check-Out:</strong> {new Date(b.checkOutDate).toLocaleDateString()}</div>}
+                              <div><strong className="text-gray-800">Move-In:</strong> {formatDate(b.moveInDate || b.checkInDate)}</div>
+                              {b.checkOutDate && <div><strong className="text-gray-800">Check-Out:</strong> {formatDate(b.checkOutDate)}</div>}
                               <div><strong className="text-gray-800">Occupants:</strong> {b.occupants} Person(s)</div>
                             </div>
                           </td>

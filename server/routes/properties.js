@@ -272,6 +272,42 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
   }
 });
 
+// PUT /api/properties/:id/status: Owner updates property status (Approved/Available, Occupied, Hidden, Archived)
+router.put('/:id/status', authenticateToken, authorizeRoles('Property Owner'), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowedStatuses = ['Approved', 'Occupied', 'Hidden', 'Archived'];
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status update command.' });
+    }
+
+    const propertiesColl = db.collection('properties');
+    const property = await propertiesColl.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({ message: 'Property listing not found.' });
+    }
+
+    if (String(property.owner) !== String(req.user._id)) {
+      return res.status(403).json({ message: 'Forbidden. You do not own this listing.' });
+    }
+
+    const updates = { 
+      status,
+      isAvailable: status === 'Approved'
+    };
+    const updated = await propertiesColl.findByIdAndUpdate(req.params.id, updates);
+
+    res.json({
+      message: `Property status set to '${status === 'Approved' ? 'Available' : status}' successfully!`,
+      property: updated
+    });
+  } catch (error) {
+    console.error('Owner property status change failed:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
 // DELETE /api/properties/:id: Owner deletes property details
 router.delete('/:id', authenticateToken, authorizeRoles('Property Owner', 'Admin'), async (req, res) => {
   try {
