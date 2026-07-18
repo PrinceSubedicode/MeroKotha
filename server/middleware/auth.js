@@ -4,7 +4,7 @@ import { db } from '../db.js';
 const JWT_SECRET = process.env.JWT_SECRET || 'merokotha-super-secret-nepal-2026';
 
 // General Authenticate Middleware
-export function authenticateToken(req, res, next) {
+export async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Expecting 'Bearer TOKEN'
 
@@ -14,6 +14,22 @@ export function authenticateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Check user status directly in DB to handle suspension / soft-deletion instantly
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(decoded._id);
+    if (!user) {
+      return res.status(401).json({ message: 'User account not found. Please log in again.' });
+    }
+    
+    if (user.status === 'Suspended') {
+      return res.status(403).json({ message: 'Your account is temporarily suspended by the administrator. Please contact support.' });
+    }
+    
+    if (user.status === 'Deleted') {
+      return res.status(403).json({ message: 'This account has been deleted.' });
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

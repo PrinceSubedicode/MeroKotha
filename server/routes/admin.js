@@ -81,13 +81,62 @@ router.get('/bookings', async (req, res) => {
   }
 });
 
+// Helper: Create admin notification for target user
+const sendUserNotification = async (userId, title, message, type = 'info') => {
+  try {
+    const notificationsColl = db.collection('notifications');
+    await notificationsColl.create({
+      userId,
+      title,
+      message,
+      type,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Failed to create notification:', err);
+  }
+};
+
+// Helper: Register administrative audit log
+const createAuditLog = async (adminId, adminName, action, targetUserId, targetUserName, details = '') => {
+  try {
+    const auditLogsColl = db.collection('audit_logs');
+    await auditLogsColl.create({
+      adminId,
+      adminName,
+      action,
+      targetUserId,
+      targetUserName,
+      details,
+      createdAt: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Failed to write audit log:', err);
+  }
+};
+
+// GET /api/admin/audit-logs: Retrieve administrative actions history
+router.get('/audit-logs', async (req, res) => {
+  try {
+    const auditLogsColl = db.collection('audit_logs');
+    const logs = await auditLogsColl.find({});
+    // Sort newest first
+    logs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(logs);
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
 // GET /api/admin/users: Retrieve list of all platform users
 router.get('/users', async (req, res) => {
   try {
     const usersColl = db.collection('users');
     const allUsers = await usersColl.find({});
     
-    // Remove sensitive fields
+    // Remove sensitive fields but include all detailed data for UI display/filters
     const formatted = allUsers.map(u => ({
       _id: u._id,
       name: u.name,
@@ -97,12 +146,111 @@ router.get('/users', async (req, res) => {
       isVerified: u.isVerified || false,
       verificationStatus: u.verificationStatus || 'Not Submitted',
       verificationDetails: u.verificationDetails || null,
+      photo: u.photo || null,
+      address: u.address || null,
+      dob: u.dob || null,
+      status: u.status || 'Active',
+      lastLogin: u.lastLogin || null,
+      loginHistory: u.loginHistory || [],
       createdAt: u.createdAt
     }));
 
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching admin users list:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// GET /api/admin/users/:id/details: Retrieve detailed user profile, activity stats and history
+router.get('/users/:id/details', async (req, res) => {
+  try {
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const propertiesColl = db.collection('properties');
+    const bookingsColl = db.collection('bookings');
+    const auditLogsColl = db.collection('audit_logs');
+
+    // 1. Total Properties Listed
+    const totalProperties = await propertiesColl.count({ owner: user._id });
+
+    // 2. Bookings count by status
+    const bookingQuery = user.role === 'Property Owner' 
+      ? { ownerId: user._id } 
+      : { tenantId: user._id };
+
+    const totalBookings = await bookingsColl.count(bookingQuery);
+    const completedBookings = await bookingsColl.count({ ...bookingQuery, status: 'Completed' });
+    const cancelledBookings = await bookingsColl.count({ ...bookingQuery, status: 'Cancelled' });
+    const pendingBookings = await bookingsColl.count({ ...bookingQuery, status: 'Pending' });
+    const confirmedBookings = await bookingsColl.count({ ...bookingQuery, status: 'Confirmed' });
+    const rejectedBookings = await bookingsColl.count({ ...bookingQuery, status: 'Rejected' });
+
+    // 3. Verification History & Logs from Audit logs
+    const historyLogs = await auditLogsColl.find({ targetUserId: user._id });
+    historyLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // 4. Inquiries count
+    const inquiriesColl = db.collection('inquiries');
+    const inquiriesQuery = user.role === 'Property Owner' 
+      ? { ownerId: user._id } 
+      : { tenantId: user._id };
+    const inquiriesCount = await inquiriesColl.count(inquiriesQuery);
+
+    const profile = {
+      dob: user.dob || null,
+      address: user.address || null
+    };
+
+    const lastLogin = user.loginHistory && user.loginHistory.length > 0 
+      ? user.loginHistory[0] 
+      : (user.lastLogin ? { timestamp: user.lastLogin, ip: 'N/A' } : null);
+
+    res.json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        isVerified: user.isVerified || false,
+        verificationStatus: user.verificationStatus || 'Not Submitted',
+        verificationDetails: user.verificationDetails || null,
+        photo: user.photo || null,
+        dob: user.dob || null,
+        address: user.address || null,
+        status: user.status || 'Active',
+        lastLogin: user.lastLogin || null,
+        loginHistory: user.loginHistory || [],
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt || user.createdAt
+      },
+      activity: {
+        totalProperties,
+        totalBookings,
+        completedBookings,
+        cancelledBookings,
+        pendingBookings,
+        confirmedBookings,
+        rejectedBookings
+      },
+      history: historyLogs,
+      // Flat properties for exact frontend alignment
+      propertiesCount: totalProperties,
+      bookingsCount: totalBookings,
+      inquiriesCount,
+      auditCount: historyLogs.length,
+      userAuditLogs: historyLogs,
+      profile,
+      lastLogin
+    });
+  } catch (error) {
+    console.error('Error fetching detailed user profile:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
@@ -164,6 +312,27 @@ router.put('/users/:id/verify', async (req, res) => {
 
     const updated = await usersColl.findByIdAndUpdate(req.params.id, updates);
 
+    // Audit log
+    const actionName = newVerifyState ? 'User Approved' : 'User Rejected';
+    await createAuditLog(
+      req.user._id,
+      req.user.name,
+      actionName,
+      userToVerify._id,
+      userToVerify.name,
+      newVerifyState ? 'Verified owner.' : 'Revoked owner verification.'
+    );
+
+    // Notification
+    await sendUserNotification(
+      userToVerify._id,
+      newVerifyState ? 'Account Verified' : 'Verification Revoked',
+      newVerifyState 
+        ? 'Congratulations! Your landlord account is verified. You can now publish approved properties.'
+        : 'Your landlord verification status was revoked by an administrator.',
+      newVerifyState ? 'success' : 'error'
+    );
+
     res.json({
       message: `User '${userToVerify.name}' verification state set to ${newVerifyState}`,
       user: {
@@ -184,7 +353,7 @@ router.put('/users/:id/verify', async (req, res) => {
 // PUT /api/admin/users/:id/verification-review: Approve or Reject identity verification documents
 router.put('/users/:id/verification-review', async (req, res) => {
   try {
-    const { status, rejectionReason } = req.body;
+    const { status, rejectionReason, isRequestNewDoc } = req.body;
     if (!status || !['Verified', 'Rejected'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status update. Must be Verified or Rejected.' });
     }
@@ -210,6 +379,27 @@ router.put('/users/:id/verification-review', async (req, res) => {
 
     const updated = await usersColl.findByIdAndUpdate(req.params.id, updates);
 
+    // Audit Log & Notifications
+    let actionLog = 'User Rejected';
+    let notifTitle = 'Verification Rejected';
+    let notifMsg = rejectionReason || 'Your identity verification documents were rejected by the administrator.';
+    let notifType = 'error';
+
+    if (status === 'Verified') {
+      actionLog = 'User Approved';
+      notifTitle = 'Account Verified';
+      notifMsg = 'Congratulations! Your identity verification documents have been approved and verified.';
+      notifType = 'success';
+    } else if (isRequestNewDoc) {
+      actionLog = 'Document Re-upload Requested';
+      notifTitle = 'New Documents Requested';
+      notifMsg = `The administrator requested a document re-upload: ${rejectionReason}`;
+      notifType = 'warning';
+    }
+
+    await createAuditLog(req.user._id, req.user.name, actionLog, user._id, user.name, notifMsg);
+    await sendUserNotification(user._id, notifTitle, notifMsg, notifType);
+
     res.json({
       message: `User identity verification status set to '${status}' successfully!`,
       user: {
@@ -224,6 +414,148 @@ router.put('/users/:id/verification-review', async (req, res) => {
 
   } catch (error) {
     console.error('Admin user verification review failed:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// PUT /api/admin/users/:id/suspend: Suspend user account
+router.put('/users/:id/suspend', async (req, res) => {
+  try {
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const updated = await usersColl.findByIdAndUpdate(req.params.id, { status: 'Suspended' });
+    
+    // Audit Log
+    await createAuditLog(req.user._id, req.user.name, 'User Suspended', user._id, user.name, 'Suspended account access temporarily.');
+
+    // Notification
+    await sendUserNotification(user._id, 'Account Suspended', 'Your account has been temporarily suspended by the administrator. Please contact support.', 'error');
+
+    res.json({
+      message: `User '${user.name}' has been suspended successfully!`,
+      user: { ...updated, status: 'Suspended' }
+    });
+  } catch (error) {
+    console.error('Error suspending user:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// PUT /api/admin/users/:id/activate: Activate suspended user account
+router.put('/users/:id/activate', async (req, res) => {
+  try {
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const updated = await usersColl.findByIdAndUpdate(req.params.id, { status: 'Active' });
+    
+    // Audit Log
+    await createAuditLog(req.user._id, req.user.name, 'User Activated', user._id, user.name, 'Restored account access.');
+
+    // Notification
+    await sendUserNotification(user._id, 'Account Activated', 'Your account has been successfully activated. You can now log in.', 'success');
+
+    res.json({
+      message: `User '${user.name}' has been activated successfully!`,
+      user: { ...updated, status: 'Active' }
+    });
+  } catch (error) {
+    console.error('Error activating user:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// DELETE /api/admin/users/:id: Soft delete or force delete user account
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const { force } = req.query;
+    const usersColl = db.collection('users');
+    const user = await usersColl.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Safety checks before deletion
+    if (force !== 'true') {
+      const propertiesColl = db.collection('properties');
+      const bookingsColl = db.collection('bookings');
+
+      // 1. Listed properties count
+      const listedPropertiesCount = await propertiesColl.count({
+        owner: user._id,
+        status: { $in: ['Approved', 'Pending'] }
+      });
+
+      // 2. Active bookings count
+      const activeBookingsCount = await bookingsColl.count({
+        $or: [
+          { tenantId: user._id, status: 'Confirmed' },
+          { ownerId: user._id, status: 'Confirmed' }
+        ]
+      });
+
+      // 3. Active rental agreements count (matching confirmed bookings in this domain)
+      const activeRentalAgreementsCount = activeBookingsCount;
+
+      // 4. Pending bookings count
+      const pendingBookingsCount = await bookingsColl.count({
+        $or: [
+          { tenantId: user._id, status: 'Pending' },
+          { ownerId: user._id, status: 'Pending' }
+        ]
+      });
+
+      // 5. Verification records existence
+      const hasVerificationRecords = !!(user.isVerified || user.verificationStatus === 'Verified' || user.verificationStatus === 'Under Review' || user.verificationDetails);
+
+      if (listedPropertiesCount > 0 || activeBookingsCount > 0 || pendingBookingsCount > 0 || hasVerificationRecords) {
+        return res.status(200).json({
+          success: false,
+          warning: true,
+          message: 'Safety check warning: User has active items or verification records on the platform.',
+          details: {
+            listedProperties: listedPropertiesCount,
+            activeBookings: activeBookingsCount,
+            activeRentalAgreements: activeRentalAgreementsCount,
+            pendingBookings: pendingBookingsCount,
+            hasVerificationRecords: hasVerificationRecords ? 1 : 0
+          }
+        });
+      }
+    }
+
+    // Perform soft delete (mark status as Deleted)
+    const updated = await usersColl.findByIdAndUpdate(req.params.id, { status: 'Deleted' });
+
+    // Deactivate their properties if they are owner
+    if (user.role === 'Property Owner') {
+      const propertiesColl = db.collection('properties');
+      await propertiesColl.updateMany({ owner: user._id }, { status: 'Suspended' });
+    }
+
+    // Audit Log
+    await createAuditLog(req.user._id, req.user.name, 'User Deleted', user._id, user.name, `Soft-deleted user account (force=${force === 'true'}).`);
+
+    // Notification
+    await sendUserNotification(user._id, 'Account Deleted', 'Your account has been deleted by the administrator.', 'error');
+
+    res.json({
+      success: true,
+      message: `User '${user.name}' has been soft-deleted successfully!`,
+      user: { ...updated, status: 'Deleted' }
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 });

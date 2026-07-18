@@ -492,7 +492,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1541417904950-b855846fe074?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=600" 
                 alt="Kathmandu" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
@@ -528,7 +528,7 @@ export default function Home() {
               className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
             >
               <img 
-                src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=600" 
+                src="https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&q=80&w=600" 
                 alt="Pokhara" 
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-all duration-300"
                 referrerPolicy="no-referrer"
@@ -565,8 +565,8 @@ export default function Home() {
       {/* Tutorial How it Works Segment */}
       <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 bg-white transition-colors duration-300">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">How simple it works</h2>
-          <p className="text-sm text-gray-500 mt-1">Rent safely without brokers or overhead expenses on MeroKotha</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">How MeroKotha Works</h2>
+          <p className="text-sm text-gray-500 mt-1">A simple, secure, and verified rental process for both tenants and property owners.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -575,20 +575,24 @@ export default function Home() {
           <div className="bg-white rounded-2xl p-8 border border-gray-150 shadow-xs hover:shadow-sm transition-all">
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">1</span>
-              For Rental Seekers (Tenants)
+              For Tenants
             </h3>
             <ul className="space-y-4 text-sm text-gray-600">
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Browse Verified Ads:</strong> Browse through flats and rooms sorted by city, price range, and custom list of facilities.</span>
+                <span><strong>Browse Verified Properties:</strong> Explore verified rooms, flats, hostels, and houses across Nepal with advanced search and filters.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Bookmark Favorites:</strong> Save interesting rental properties so you can cross-compare or inspect them later.</span>
+                <span><strong>Book Your Preferred Property:</strong> Send a booking request directly to the property owner after reviewing complete property details.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Send Inquiries directly:</strong> Fill in the inquiry form. The landlord receives your details immediately to start physical scheduling.</span>
+                <span><strong>Track Booking Status:</strong> Monitor your booking request, receive approval or rejection notifications, and cancel bookings when needed.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong>Move In Securely:</strong> Once the owner approves your booking, the property becomes reserved and unavailable to other tenants.</span>
               </li>
             </ul>
           </div>
@@ -597,20 +601,24 @@ export default function Home() {
           <div className="bg-white rounded-2xl p-8 border border-gray-150 shadow-xs hover:shadow-sm transition-all">
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">2</span>
-              For Property Owners & Landlords
+              For Property Owners
             </h3>
             <ul className="space-y-4 text-sm text-gray-600">
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Register Listing:</strong> Submit rooms/flats with detailed facilities lists, photos, rent pricing, and precise directions location details.</span>
+                <span><strong>List Your Property:</strong> Publish rooms, flats, or houses with photos, amenities, pricing, and exact map location.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Admin Review approval:</strong> MeroKotha admins verify listing data to keep the platform clean and approve it within hours.</span>
+                <span><strong>Admin Verification:</strong> Your listing is reviewed by the admin before it becomes publicly visible.</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Manage tenant inquiries:</strong> Review prospective tenant request letters from your dedicated dashboard.</span>
+                <span><strong>Manage Booking Requests:</strong> Accept or reject tenant booking requests directly from your Owner Dashboard.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span><strong>Update Availability:</strong> When a booking is confirmed, the property is automatically marked as occupied and hidden from public listings until it becomes available again.</span>
               </li>
             </ul>
           </div>

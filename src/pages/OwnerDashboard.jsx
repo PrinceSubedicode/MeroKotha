@@ -5,6 +5,7 @@ import { NEPAL_GEOGRAPHY, GENERAL_FACILITIES, PROPERTY_TYPES } from '../utils/ne
 import { PlusCircle, ClipboardList, Home, Mail, Phone, Edit, Trash2, CheckCircle2, AlertTriangle, RefreshCw, X, Image as ImageIcon, Send, MapPin, Map as MapIcon, Bell, Check } from 'lucide-react';
 import MapIntegrationWrapper from '../components/MapIntegrationWrapper.jsx';
 import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();
@@ -59,6 +60,9 @@ export default function OwnerDashboard() {
   const [formBedrooms, setFormBedrooms] = useState('1');
   const [formBathrooms, setFormBathrooms] = useState('1');
   const [formFacilities, setFormFacilities] = useState([]);
+  const [formAdditionalFeatures, setFormAdditionalFeatures] = useState('');
+  const [formOtherChecked, setFormOtherChecked] = useState(false);
+  const [formOtherText, setFormOtherText] = useState('');
   const [formImagesBase64, setFormImagesBase64] = useState([]); // Array of base64 image keys
   const [formLat, setFormLat] = useState('');
   const [formLng, setFormLng] = useState('');
@@ -299,6 +303,9 @@ export default function OwnerDashboard() {
     setFormBedrooms('1');
     setFormBathrooms('1');
     setFormFacilities([]);
+    setFormAdditionalFeatures('');
+    setFormOtherChecked(false);
+    setFormOtherText('');
     setFormImagesBase64([]);
     setFormLat('');
     setFormLng('');
@@ -324,6 +331,9 @@ export default function OwnerDashboard() {
     setFormBedrooms(String(prop.bedrooms || '1'));
     setFormBathrooms(String(prop.bathrooms || '1'));
     setFormFacilities(prop.facilities || []);
+    setFormAdditionalFeatures(prop.additionalFeatures || '');
+    setFormOtherChecked(!!prop.otherAmenities);
+    setFormOtherText(prop.otherAmenities || '');
     // Seed initial server images to prevent overwriting
     setFormImagesBase64(prop.images || []);
     setFormLat(prop.lat ? String(prop.lat) : '');
@@ -400,6 +410,8 @@ export default function OwnerDashboard() {
       bedrooms: Number(formBedrooms),
       bathrooms: Number(formBathrooms),
       facilities: formFacilities,
+      additionalFeatures: formAdditionalFeatures,
+      otherAmenities: formOtherChecked ? formOtherText : '',
       images: formImagesBase64,
       lat: formLat ? Number(formLat) : null,
       lng: formLng ? Number(formLng) : null
@@ -1020,7 +1032,58 @@ export default function OwnerDashboard() {
                     </label>
                   );
                 })}
+                <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer py-1 group">
+                  <input 
+                    type="checkbox"
+                    checked={formOtherChecked}
+                    onChange={(e) => {
+                      setFormOtherChecked(e.target.checked);
+                      if (!e.target.checked) {
+                        setFormOtherText('');
+                      }
+                    }}
+                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 shrink-0"
+                  />
+                  <span className="group-hover:text-emerald-700 font-semibold truncate">Other</span>
+                </label>
               </div>
+
+              <AnimatePresence>
+                {formOtherChecked && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="overflow-hidden mt-3"
+                  >
+                    <textarea
+                      rows={2}
+                      placeholder="Enter any additional amenity or facility not listed above (e.g. Pet Friendly, Rooftop Access, Laundry Service, Generator, EV Charging, Prayer Room, Study Room, Gym, Swimming Pool, Boys Only, Girls Only, Family Only, etc.)"
+                      value={formOtherText}
+                      onChange={(e) => setFormOtherText(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                      id="form-other-amenities-textarea"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Row 5b: Additional Features / Keywords */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">Additional Features / Keywords</label>
+              <textarea
+                rows={2}
+                placeholder="Add custom features separated by commas (e.g. Pet Friendly, No Smoking, Fully Furnished, Near Hospital, Girls Only, Boys Only, Family Preferred, 24/7 Water...)"
+                value={formAdditionalFeatures}
+                onChange={(e) => setFormAdditionalFeatures(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3.5 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:outline-none"
+                id="form-additional-features-textarea"
+              />
+              <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                Separating custom features with commas makes them fully searchable. (e.g. "Pet Friendly, No Smoking, Furnished")
+              </p>
             </div>
 
             {/* Row 6: Image Selection Media boxes */}

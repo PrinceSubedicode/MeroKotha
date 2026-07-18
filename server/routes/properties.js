@@ -99,7 +99,7 @@ function saveImage(base64String) {
 // GET /api/properties: Retrieve approved properties matching public search filters
 router.get('/', async (req, res) => {
   try {
-    const { city, district, propertyType, minRent, maxRent, bedrooms, search } = req.query;
+    const { city, district, propertyType, minRent, maxRent, bedrooms, search, otherRequirement } = req.query;
 
     const propertiesColl = db.collection('properties');
     let properties = await propertiesColl.find({ status: 'Approved' });
@@ -149,6 +149,33 @@ router.get('/', async (req, res) => {
         (p.district && p.district.toLowerCase().includes(keyword)) ||
         (p.location && p.location.toLowerCase().includes(keyword))
       );
+    }
+
+    // Other Requirement / Custom keywords search
+    if (otherRequirement) {
+      const reqKeyword = otherRequirement.toLowerCase().trim();
+      properties = properties.filter(p => {
+        const inFacilities = p.facilities && p.facilities.some(f => f.toLowerCase().includes(reqKeyword));
+        const inAmenities = p.amenities && p.amenities.some(a => a.toLowerCase().includes(reqKeyword));
+        const inDescription = p.description && p.description.toLowerCase().includes(reqKeyword);
+        let inAdditional = false;
+        if (p.additionalFeatures) {
+          if (Array.isArray(p.additionalFeatures)) {
+            inAdditional = p.additionalFeatures.some(af => af.toLowerCase().includes(reqKeyword));
+          } else {
+            inAdditional = String(p.additionalFeatures).toLowerCase().includes(reqKeyword);
+          }
+        }
+        let inOtherAmenities = false;
+        if (p.otherAmenities) {
+          if (Array.isArray(p.otherAmenities)) {
+            inOtherAmenities = p.otherAmenities.some(oa => oa.toLowerCase().includes(reqKeyword));
+          } else {
+            inOtherAmenities = String(p.otherAmenities).toLowerCase().includes(reqKeyword);
+          }
+        }
+        return inFacilities || inAmenities || inDescription || inAdditional || inOtherAmenities;
+      });
     }
 
     // Resolve owner information summaries (no password!)
@@ -249,7 +276,7 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
       title, description, rent, propertyType, 
       province, district, city, location, 
       bedrooms, bathrooms, facilities = [], images = [],
-      lat, lng
+      lat, lng, additionalFeatures = '', otherAmenities = ''
     } = req.body;
 
     // Validate inputs
@@ -293,7 +320,9 @@ router.post('/', authenticateToken, authorizeRoles('Property Owner'), async (req
       owner: req.user._id,
       status: 'Pending', // Requires admin verification
       lat: numLat,
-      lng: numLng
+      lng: numLng,
+      additionalFeatures,
+      otherAmenities
     });
 
     res.status(201).json({
@@ -326,7 +355,7 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
       title, description, rent, propertyType, 
       province, district, city, location, 
       bedrooms, bathrooms, facilities, images,
-      lat, lng
+      lat, lng, additionalFeatures, otherAmenities
     } = req.body;
 
     // Validate coordinates on edit
@@ -352,6 +381,8 @@ router.put('/:id', authenticateToken, authorizeRoles('Property Owner'), async (r
     if (bedrooms) updates.bedrooms = Number(bedrooms);
     if (bathrooms) updates.bathrooms = Number(bathrooms);
     if (facilities) updates.facilities = facilities;
+    if (additionalFeatures !== undefined) updates.additionalFeatures = additionalFeatures;
+    if (otherAmenities !== undefined) updates.otherAmenities = otherAmenities;
     updates.lat = numLat;
     updates.lng = numLng;
     

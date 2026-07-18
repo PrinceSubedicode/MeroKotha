@@ -131,6 +131,10 @@ export default function Properties() {
   // Selected amenities
   const [selectedAmenities, setSelectedAmenities] = useState([]);
 
+  // States for custom "Other Requirement" filter
+  const [otherRequirementChecked, setOtherRequirementChecked] = useState(false);
+  const [otherRequirementText, setOtherRequirementText] = useState('');
+
   // Load properties whenever search params change
   useEffect(() => {
     async function loadFilteredProperties() {
@@ -148,6 +152,9 @@ export default function Properties() {
         if (searchParams.get('bedrooms') && searchParams.get('bedrooms') !== 'any') {
           params.bedrooms = searchParams.get('bedrooms');
         }
+        if (searchParams.get('otherRequirement')) {
+          params.otherRequirement = searchParams.get('otherRequirement');
+        }
 
         const res = await api.get('/properties', { params });
         let filteredData = res.data;
@@ -157,6 +164,34 @@ export default function Properties() {
           filteredData = filteredData.filter(prop => 
             selectedAmenities.every(amenity => prop.facilities && prop.facilities.includes(amenity))
           );
+        }
+
+        // Apply custom other requirement filter client-side for instant matching
+        const reqText = searchParams.get('otherRequirement');
+        if (reqText) {
+          const kw = reqText.toLowerCase().trim();
+          filteredData = filteredData.filter(p => {
+            const inFacilities = p.facilities && p.facilities.some(f => f.toLowerCase().includes(kw));
+            const inAmenities = p.amenities && p.amenities.some(a => a.toLowerCase().includes(kw));
+            const inDescription = p.description && p.description.toLowerCase().includes(kw);
+            let inAdditional = false;
+            if (p.additionalFeatures) {
+              if (Array.isArray(p.additionalFeatures)) {
+                inAdditional = p.additionalFeatures.some(af => af.toLowerCase().includes(kw));
+              } else {
+                inAdditional = String(p.additionalFeatures).toLowerCase().includes(kw);
+              }
+            }
+            let inOtherAmenities = false;
+            if (p.otherAmenities) {
+              if (Array.isArray(p.otherAmenities)) {
+                inOtherAmenities = p.otherAmenities.some(oa => oa.toLowerCase().includes(kw));
+              } else {
+                inOtherAmenities = String(p.otherAmenities).toLowerCase().includes(kw);
+              }
+            }
+            return inFacilities || inAmenities || inDescription || inAdditional || inOtherAmenities;
+          });
         }
 
         setProperties(filteredData);
@@ -179,6 +214,15 @@ export default function Properties() {
     setMinRent(searchParams.get('minRent') || '');
     setMaxRent(searchParams.get('maxRent') || '');
     setBedrooms(searchParams.get('bedrooms') || 'any');
+
+    const otherReqText = searchParams.get('otherRequirement') || '';
+    if (otherReqText) {
+      setOtherRequirementChecked(true);
+      setOtherRequirementText(otherReqText);
+    } else {
+      setOtherRequirementChecked(false);
+      setOtherRequirementText('');
+    }
   }, [searchParams]);
 
   const handleApplyFilters = (e) => {
@@ -191,6 +235,11 @@ export default function Properties() {
     if (minRent) updated.minRent = minRent;
     if (maxRent) updated.maxRent = maxRent;
     if (bedrooms && bedrooms !== 'any') updated.bedrooms = bedrooms;
+    
+    if (otherRequirementChecked && otherRequirementText.trim()) {
+      updated.otherRequirement = otherRequirementText.trim();
+    }
+
     setSearchParams(updated);
   };
 
@@ -204,6 +253,8 @@ export default function Properties() {
     setMaxRent('');
     setBedrooms('any');
     setSelectedAmenities([]);
+    setOtherRequirementChecked(false);
+    setOtherRequirementText('');
     setSearchParams({});
   };
 
@@ -379,23 +430,58 @@ export default function Properties() {
             {/* Checkbox Amenities list */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Amenities Required</label>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto border border-gray-150 p-3 rounded-xl bg-gray-50">
-                {GENERAL_FACILITIES.map(facility => {
-                  const isChecked = selectedAmenities.includes(facility);
-                  return (
-                    <label key={facility} className="flex items-center gap-2 cursor-pointer py-0.5 group">
-                      <input 
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handleAmenityToggle(facility)}
-                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
-                      />
-                      <span className="text-xs text-gray-600 group-hover:text-emerald-700 font-medium transition-colors">
-                        {facility}
-                      </span>
-                    </label>
-                  );
-                })}
+              <div className="space-y-1.5 border border-gray-150 p-3 rounded-xl bg-gray-50">
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {GENERAL_FACILITIES.map(facility => {
+                    const isChecked = selectedAmenities.includes(facility);
+                    return (
+                      <label key={facility} className="flex items-center gap-2 cursor-pointer py-0.5 group">
+                        <input 
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleAmenityToggle(facility)}
+                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                        />
+                        <span className="text-xs text-gray-600 group-hover:text-emerald-700 font-medium transition-colors">
+                          {facility}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {/* New custom requirement checkbox */}
+                <div className="pt-2 border-t border-gray-250/20">
+                  <label className="flex items-center gap-2 cursor-pointer py-0.5 group">
+                    <input 
+                      type="checkbox"
+                      checked={otherRequirementChecked}
+                      onChange={(e) => {
+                        setOtherRequirementChecked(e.target.checked);
+                        if (!e.target.checked) {
+                          setOtherRequirementText('');
+                        }
+                      }}
+                      className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                    />
+                    <span className="text-xs text-gray-650 font-bold group-hover:text-emerald-700 transition-colors">
+                      Other Requirement
+                    </span>
+                  </label>
+                </div>
+
+                {/* Conditional Text Box */}
+                {otherRequirementChecked && (
+                  <div className="mt-2 pt-1">
+                    <textarea
+                      value={otherRequirementText}
+                      onChange={(e) => setOtherRequirementText(e.target.value)}
+                      placeholder="Write any additional requirement (e.g. Pet Friendly, No Smoking, Furnished, WiFi 24/7, Near Bus Park, Ground Floor, etc.)"
+                      className="w-full rounded-lg border border-gray-200 bg-white p-2 text-xs font-medium focus:border-emerald-500 focus:outline-none min-h-[64px] resize-y"
+                      id="filter-other-requirement-input"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

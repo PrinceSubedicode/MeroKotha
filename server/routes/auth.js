@@ -109,6 +109,24 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password.' });
     }
 
+    // Check account status
+    if (user.status === 'Suspended') {
+      return res.status(403).json({ message: 'Your account is temporarily suspended by the administrator. Please contact support.' });
+    }
+    if (user.status === 'Deleted') {
+      return res.status(403).json({ message: 'This account has been deleted.' });
+    }
+
+    // Log login history
+    const loginEntry = { timestamp: new Date().toISOString(), ip: req.ip || '127.0.0.1' };
+    const currentHistory = Array.isArray(user.loginHistory) ? user.loginHistory : [];
+    const nextHistory = [loginEntry, ...currentHistory].slice(0, 10);
+
+    await usersColl.findByIdAndUpdate(user._id, {
+      lastLogin: loginEntry.timestamp,
+      loginHistory: nextHistory
+    });
+
     // Create Token
     const token = jwt.sign(
       { _id: user._id, email: user.email, role: user.role, name: user.name },

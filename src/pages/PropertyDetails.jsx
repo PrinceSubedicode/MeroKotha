@@ -248,6 +248,43 @@ export default function PropertyDetails() {
             ) : (
               <p className="text-xs text-gray-500 italic">No specific facilities specified by listing owner.</p>
             )}
+
+            {property.otherAmenities && String(property.otherAmenities).trim() && (
+              <div className="mt-5 pt-5 border-t border-gray-100">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+                  Additional Amenities
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" id="additional-amenities-list">
+                  {String(property.otherAmenities).split(',').map(tag => tag.trim()).filter(Boolean).map((tag, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                      <CheckSquare size={16} className="text-emerald-500 shrink-0" />
+                      <span className="font-semibold">{tag}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {property.additionalFeatures && String(property.additionalFeatures).trim() && (
+              <div className="mt-5 pt-5 border-t border-gray-100">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                  Additional Features & Custom Keywords
+                </h3>
+                <div className="flex flex-wrap gap-1.5" id="additional-features-details">
+                  {(Array.isArray(property.additionalFeatures)
+                    ? property.additionalFeatures
+                    : String(property.additionalFeatures).split(',')
+                  ).map(tag => tag.trim()).filter(Boolean).map((tag, idx) => (
+                    <span 
+                      key={idx} 
+                      className="bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-md border border-emerald-100"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Location Map Section */}
